@@ -98,7 +98,7 @@ S.onChange((next) => {
 // ------------------------------------------------------------ updates
 
 const installed = chrome.runtime.getManifest().version;
-$('version').textContent = 'You have version ' + installed + '.';
+$('version').textContent = 'You have version ' + (chrome.runtime.getManifest().version_name || installed) + '.';
 
 function isNewer(a, b) {
 	const x = a.split('.').map(Number);
