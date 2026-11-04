@@ -122,14 +122,11 @@ same system user as the code.
 
 `node scripts/build-extension.mjs` builds `dist/banterbox-<version>-chrome.zip` and
 `dist/banterbox-<version>-firefox.xpi`, each with a manifest tuned for that browser.
-To publish them, bump `version` in `extension/manifest.json`, commit, and push a
-matching tag:
-
-```bash
-git tag v1.3.0 && git push origin v1.3.0
-```
-
-The *Release* workflow then creates a GitHub Release with both files attached. If
+GitHub does this for you: every push builds both as a `browser-packages` artifact
+on the CI run, and when a push to `main` changes `version` in
+`extension/manifest.json`, the *Release* workflow tags that commit `v<version>`
+and creates a GitHub Release with both files attached. Pushes that keep the same
+version don't make a new release. If
 you add the repository secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` (an API key
 from addons.mozilla.org → Developer Hub → *Manage API Keys*), it also attaches a
 Mozilla-signed `.xpi` that installs permanently in normal Firefox. Set

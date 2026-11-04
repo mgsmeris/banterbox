@@ -1,54 +1,60 @@
 # BanterBox
 
-Browser extension (Chrome + Firefox, Manifest V3) that fixes the Siropu Chat
-shoutbox on perpheads.com and adds a custom emoji menu.
+A small browser add-on for the perpheads.com shoutbox. It gives you a proper
+emoji menu and fixes a couple of things that have been broken for a while.
 
-- `extension/`: the extension itself (load this folder)
-- `server/`: the emoji server and homepage for https://sb.smeris.me (see `server/README.md`)
-- `scripts/`: `build-extension.mjs` (Chrome .zip + Firefox .xpi into `dist/`) and
-  `check-secrets.sh` (blocks settings, data and secrets from git)
+## What you get
 
-Packages are attached to each GitHub Release (push a `v<version>` tag).
+**More emojis.** There's a Kappa button in the shoutbox toolbar. Click it, pick an
+emoji, and it goes into your message. Other people see it too, even if they don't
+have BanterBox. The emojis you used last show up at the top.
 
-## What it does
+**Your own emojis.** Click the BanterBox icon in your browser's toolbar to add your
+own: give it a name and paste a link to the image. They stay in your browser.
 
-1. **Emoji menu.** A Kappa button in the shoutbox toolbar opens a searchable menu
-   of custom emojis from https://sb.smeris.me. Picking one inserts it as an image
-   (`[IMG width="32px" alt=":name:"]…[/IMG]`), so everyone sees it, even without the
-   extension. Recently used emojis are listed first. New emojis are added on the
-   server, with no extension update needed.
+**No outside requests if you'd rather not.** The shared emoji list comes from
+sb.smeris.me. You can turn it off in the same BanterBox menu, and the add-on won't
+contact that site at all. Your own emojis keep working.
 
-   The menu uses the forum's own menu styling, so it matches whichever style you
-   picked on perpheads.
+**Editing works again.** The Edit button on your messages opens the edit box like it
+should. Enter saves, Shift+Enter starts a new line.
 
-   **Settings** (click the BanterBox icon in the browser toolbar): switch off the
-   sb.smeris.me list, and BanterBox makes no requests to sb.smeris.me at all. Add
-   **your own emojis** (a name + an `https://` image link). They're kept only in
-   your browser's extension storage and work whether the list is on or off.
-2. **Edit button does nothing.** The server answers the edit request with
-   `{"message_html": …}` instead of XenForo's standard `{"html": {"content": …}}`,
-   so XenForo's overlay code silently ignores it. The edit form also refers to a
-   JS handler (`siropu-chat-message-save`) that no longer exists in the add-on.
-   BanterBox opens the edit overlay itself and adds the missing handler.
-   Enter saves and Shift+Enter adds a new line.
-3. **"Load more messages" ends up above the loaded messages.** In newest-on-top
-   mode the add-on adds older messages *after* the button. BanterBox keeps the
-   button at the bottom (or at the top, in oldest-on-top mode).
+**"Load more messages" stays where it belongs.** Older messages now load above the
+button instead of below it, so you don't have to hunt for it.
+
+The emoji menu takes on the look of whatever forum style you've picked.
 
 ## Install
 
-### Chrome / Edge / Brave
-1. Open `chrome://extensions` and switch on **Developer mode**.
-2. Click **Load unpacked** and select the `extension` folder.
+Download the latest version from the [Releases page](../../releases/latest).
 
-### Firefox (128+)
-- Quick test: open `about:debugging#/runtime/this-firefox` → **Load Temporary
-  Add-on…** → pick `extension/manifest.json`. This is removed when Firefox restarts.
-- Permanent: sign it as an *unlisted* add-on at
-  https://addons.mozilla.org/developers/ and install the signed `.xpi`.
-  Firefox Developer Edition and Nightly can also install it unsigned after you
-  set `xpinstall.signatures.required` to `false`.
-- If the fix doesn't kick in, open `about:addons` → BanterBox → **Permissions**
-  and make sure access to perpheads.com is allowed.
+### Chrome, Edge, Brave
 
-When it's running, the page console shows `[BanterBox] active`.
+1. Download the `chrome.zip` file and unzip it.
+2. Go to `chrome://extensions` and turn on **Developer mode** (top right).
+3. Click **Load unpacked** and pick the unzipped folder.
+
+### Firefox
+
+Download the `firefox-signed.xpi` file and open it in Firefox. Firefox will ask if
+you want to add BanterBox; say yes.
+
+If you only see a `firefox.xpi` without "signed" in the name, normal Firefox won't
+accept it. You can load it for one session through `about:debugging` →
+**This Firefox** → **Load Temporary Add-on…**.
+
+### Then
+
+Reload perpheads.com. The Kappa button shows up in the shoutbox toolbar.
+
+If it doesn't show up in Firefox, go to `about:addons` → BanterBox →
+**Permissions** and allow it on perpheads.com.
+
+## Questions or problems
+
+Open an issue on this page, or poke me in the shoutbox.
+
+---
+
+<sub>For developers: the add-on lives in `extension/`, the emoji site in `server/`
+(see [server/README.md](server/README.md)), and build scripts in `scripts/`.</sub>
