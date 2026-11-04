@@ -1,0 +1,3 @@
+# Keep secrets and data out of version control.
+config.php
+data/
