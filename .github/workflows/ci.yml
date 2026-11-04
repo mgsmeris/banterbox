@@ -2,7 +2,7 @@ name: Build and deploy
 
 # Every push to main:
 #   1. builds the Chrome .zip and Firefox .xpi and puts them on the GitHub Release
-#      v<version> (version from extension/manifest.json). Same version again just
+#      v<version_name or version> (from extension/manifest.json). Same version again just
 #      replaces the files; a new version makes a new release.
 #   2. updates the "deploy" branch with the server code (server/ without tests),
 #      which the web host pulls from.
@@ -51,9 +51,11 @@ jobs:
         run: |
           v=$(node -p "require('./extension/manifest.json').version")
           echo "version=$v" >> "$GITHUB_OUTPUT"
-          echo "tag=v$v" >> "$GITHUB_OUTPUT"
+          # Release tag uses version_name when set (e.g. 1.0.0-BETA), else version.
+          name=$(node -p "const m=require('./extension/manifest.json'); m.version_name || m.version")
+          echo "tag=v$name" >> "$GITHUB_OUTPUT"
           # Mozilla signs each version only once; reuse the signed file after that.
-          if gh release view "v$v" --json assets -q '.assets[].name' 2>/dev/null | grep -qx banterbox-firefox-signed.xpi; then
+          if gh release view "v$name" --json assets -q '.assets[].name' 2>/dev/null | grep -qx banterbox-firefox-signed.xpi; then
             echo "signed=true" >> "$GITHUB_OUTPUT"
           fi
 

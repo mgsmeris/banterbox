@@ -15,9 +15,10 @@ if (!in_array(Http::method(), ['GET', 'HEAD'], true)) {
 }
 
 $emojis = Emojis::all();
-$https = static fn (string $u): string => preg_match('~^https://[^\s"<>]+$~i', $u) ? $u : '';
-$firefox = $https((string) App::config('firefox_url'));
-$chrome = $https((string) (App::config('download_url') ?: App::config('chrome_url')));
+// Manual beta downloads: always the newest GitHub Release (fixed file names).
+const RELEASES = 'https://github.com/mgsmeris/banterbox/releases';
+$chrome = RELEASES . '/latest/download/banterbox-chrome.zip';
+$firefox = RELEASES . '/latest/download/banterbox-firefox-signed.xpi';
 
 // Screenshots are shown only once their files are in public/assets/.
 $shots = array_filter([
@@ -35,14 +36,8 @@ View::head('BanterBox: a better Perpheads shoutbox');
 			<h1>BanterBox</h1>
 			<p class="lead">A small browser extension that fixes the Perpheads shoutbox and gives it better emojis.</p>
 			<div class="actions">
-				<?php if ($firefox !== ''): ?>
-					<a class="btn btn-primary" href="<?= View::e($firefox) ?>" rel="noopener">Get it for Firefox</a>
-				<?php endif ?>
-				<?php if ($chrome !== ''): ?>
-					<a class="btn btn-primary" href="<?= View::e($chrome) ?>" rel="noopener">Get it for Chrome</a>
-				<?php endif ?>
+				<a class="btn btn-primary" href="#download">Download the beta</a>
 				<?php if ($shots): ?><a class="btn" href="#screenshots">Screenshots</a><?php endif ?>
-				<a class="btn" href="#install">How to install</a>
 				<a class="btn" href="#emojis">Browse emojis</a>
 			</div>
 		</div>
@@ -88,15 +83,37 @@ View::head('BanterBox: a better Perpheads shoutbox');
 		</section>
 	<?php endif ?>
 
-	<section id="install" class="card install">
-		<h2>Install</h2>
-		<ol>
-			<li><strong>Firefox:</strong> <?php if ($firefox !== ''): ?><a href="<?= View::e($firefox) ?>" rel="noopener">download the signed add-on</a><?php else: ?>download the signed add-on<?php endif ?> and open it in Firefox (or drag it onto a Firefox window), then click <em>Add</em>. It updates by itself.</li>
-			<li><strong>Chrome, Edge, Brave:</strong> download the <code>chrome.zip</code> file<?php if ($chrome !== ''): ?> from <a href="<?= View::e($chrome) ?>" rel="noopener">the latest release</a><?php endif ?> and unzip it. Open <code>chrome://extensions</code>, turn on <em>Developer mode</em>, click <em>Load unpacked</em> and pick the unzipped folder.</li>
-			<li>Reload Perpheads. The Kappa button appears in the shoutbox toolbar.</li>
-			<li>Click the BanterBox icon in your browser's toolbar for the settings: the emoji list switch and your own emojis.</li>
-		</ol>
-		<p class="muted">Emojis are posted as normal images, so everyone sees them, even without the extension.</p>
+	<section id="download" class="download">
+		<div class="section-head">
+			<h2>Download <span class="tag">Beta</span></h2>
+		</div>
+		<p class="muted download-intro">BanterBox is in beta, so for now you install it by hand. Store versions are coming later.</p>
+		<div class="download-grid">
+			<article class="card browser">
+				<h3>Chrome, Edge, Brave</h3>
+				<a class="btn btn-primary" href="<?= View::e($chrome) ?>" rel="noopener">Download for Chrome (.zip)</a>
+				<ol>
+					<li>Unzip the file.</li>
+					<li>Open <code>chrome://extensions</code> and turn on <em>Developer mode</em>.</li>
+					<li>Click <em>Load unpacked</em> and pick the unzipped folder.</li>
+				</ol>
+				<div class="store-soon" aria-disabled="true">
+					<span>Chrome Web Store</span><span class="soon">Coming later</span>
+				</div>
+			</article>
+			<article class="card browser">
+				<h3>Firefox</h3>
+				<a class="btn btn-primary" href="<?= View::e($firefox) ?>" rel="noopener">Download for Firefox (.xpi)</a>
+				<ol>
+					<li>Open the downloaded file in Firefox, or drag it onto a Firefox window.</li>
+					<li>Click <em>Add</em>.</li>
+				</ol>
+				<div class="store-soon" aria-disabled="true">
+					<span>Firefox Add-ons</span><span class="soon">Coming later</span>
+				</div>
+			</article>
+		</div>
+		<p class="muted">Then reload Perpheads: the Kappa button appears in the shoutbox toolbar. Click the BanterBox icon in your browser's toolbar for the settings. Older versions are on <a href="<?= View::e(RELEASES) ?>" rel="noopener">GitHub</a>.</p>
 	</section>
 
 	<section id="emojis">

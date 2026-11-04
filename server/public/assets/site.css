@@ -324,3 +324,43 @@ input:invalid:not(:placeholder-shown):not(:focus) { border-color: var(--danger);
 	background: var(--bg);
 }
 .shot figcaption { margin-top: .75rem; color: var(--muted); font-size: .9rem; text-align: center; }
+
+/* --------------------------------------------------------------- download */
+
+.download { margin-bottom: 1.5rem; }
+.download .section-head { margin-bottom: .4rem; }
+.download-intro { margin: 0 0 1.2rem; }
+.tag {
+	display: inline-block;
+	margin-left: .3em;
+	padding: .15em .6em;
+	border-radius: 999px;
+	background: rgba(232, 98, 44, .15);
+	border: 1px solid rgba(232, 98, 44, .5);
+	color: var(--accent-2);
+	font-size: .75rem;
+	font-weight: 600;
+	vertical-align: middle;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+}
+.download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 1rem; }
+.download-grid .card { margin: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.browser h3 { margin: 0 0 .9rem; font-size: 1.1rem; }
+.browser ol { margin: 1rem 0 1.2rem; padding-left: 1.2rem; color: var(--muted); }
+.browser li { margin-bottom: .3rem; }
+.store-soon {
+	margin-top: auto;
+	align-self: stretch;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	padding: .6em 1em;
+	border: 1px dashed var(--line);
+	border-radius: 999px;
+	color: var(--muted);
+	cursor: not-allowed;
+	user-select: none;
+}
+.store-soon .soon { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; opacity: .8; }

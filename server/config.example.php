@@ -39,11 +39,6 @@ return [
 	// Leave true in production. Only set false for local testing over plain http.
 	'https_only' => true,
 
-	// Download buttons on the homepage (https links; leave '' to hide a button).
-	// Both default to the latest GitHub Release.
-	'firefox_url' => 'https://github.com/mgsmeris/banterbox/releases/latest/download/banterbox-firefox-signed.xpi',
-	'chrome_url'  => 'https://github.com/mgsmeris/banterbox/releases/latest',
-
 	// Login protection.
 	'login_max_failures_per_user' => 5,   // within login_window seconds
 	'login_max_failures_per_ip'   => 20,  // within login_window seconds

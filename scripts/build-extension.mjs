@@ -1,8 +1,8 @@
 // Builds the browser packages from extension/:
 //
 //   node scripts/build-extension.mjs
-//     -> dist/banterbox-<version>-chrome.zip    (Chrome, Edge, Brave: Web Store upload or unzip + Load unpacked)
-//     -> dist/banterbox-<version>-firefox.xpi   (Firefox: AMO signing upload)
+//     -> dist/banterbox-chrome.zip    (Chrome, Edge, Brave: Web Store upload or unzip + Load unpacked)
+//     -> dist/banterbox-firefox.xpi   (Firefox: AMO signing upload)
 //
 // Each package gets a manifest tuned for its browser. Plain Node (22+), no dependencies.
 import fs from 'node:fs';
@@ -124,9 +124,10 @@ function build(target, m, ext) {
 		{ name: 'manifest.json', data: Buffer.from(JSON.stringify(m, null, 2) + '\n') },
 		...files.map((f) => ({ name: f, data: fs.readFileSync(path.join(src, f)) })),
 	];
-	const file = path.join(out, `banterbox-${version}-${target}.${ext}`);
+	// Same name every version, so https://github.com/…/releases/latest/download/<name> always works.
+	const file = path.join(out, `banterbox-${target}.${ext}`);
 	fs.writeFileSync(file, zip(entries));
-	console.log(`${path.relative(root, file)}  (${entries.length} files, ${(fs.statSync(file).size / 1024).toFixed(1)} KB)`);
+	console.log(`${path.relative(root, file)}  v${version} (${entries.length} files, ${(fs.statSync(file).size / 1024).toFixed(1)} KB)`);
 	return file;
 }
 
