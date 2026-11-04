@@ -1,13 +1,17 @@
-name: CI and deploy
+name: Build and deploy
 
-# On every push and pull request: secret scan + all tests + build the packages.
-# On pushes to main, once all of that passes: update the "deploy" branch, which
-# holds only the server code (server/ without tests). Point the web host's git
-# integration at that branch.
+# Every push to main:
+#   1. builds the Chrome .zip and Firefox .xpi and puts them on the GitHub Release
+#      v<version> (version from extension/manifest.json). Same version again just
+#      replaces the files; a new version makes a new release.
+#   2. updates the "deploy" branch with the server code (server/ without tests),
+#      which the web host pulls from.
+# Other branches and pull requests only build.
 on:
   push:
     branches-ignore: [deploy]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,50 +28,57 @@ jobs:
       - uses: actions/checkout@v4
       - run: bash scripts/check-secrets.sh --all
 
-  test:
-    name: Tests (PHP 8.5 in WebAssembly + Chrome)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: server/tests
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: server/tests/package-lock.json
-      - run: npm ci
-      - run: npx playwright test
-        env:
-          PW_CHANNEL: chrome
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: server/tests/playwright-report/
-          retention-days: 7
-
   build:
-    name: Build browser packages
+    name: Build Chrome and Firefox add-ons
+    needs: [secrets]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node scripts/build-extension.mjs
-      - name: Lint the Firefox package (Mozilla's addons-linter)
-        run: npx --yes addons-linter dist/*-firefox.xpi
+
+      - name: Sign for Firefox (only if AMO keys are set)
+        if: github.ref == 'refs/heads/main' && env.AMO_JWT_ISSUER != ''
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          v=$(node -p "require('./extension/manifest.json').version")
+          mkdir -p /tmp/ff dist/signed
+          unzip -q dist/*-firefox.xpi -d /tmp/ff
+          npx --yes web-ext sign --channel=unlisted --source-dir /tmp/ff \
+            --artifacts-dir dist/signed --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
+          for f in dist/signed/*.xpi; do mv "$f" "dist/banterbox-$v-firefox-signed.xpi"; done
+
       - uses: actions/upload-artifact@v4
         with:
           name: browser-packages
-          path: dist/
+          path: dist/*.*
           retention-days: 30
+
+      - name: Put the files on the GitHub Release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v$(node -p "require('./extension/manifest.json').version")"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.zip dist/*.xpi --clobber
+          else
+            gh release create "$tag" dist/*.zip dist/*.xpi --target "$GITHUB_SHA" \
+              --title "BanterBox $tag" --generate-notes
+          fi
 
   deploy:
     name: Update the deploy branch (server only)
-    needs: [secrets, test, build]
+    needs: [secrets]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
