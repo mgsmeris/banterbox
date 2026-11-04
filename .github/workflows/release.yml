@@ -1,0 +1,55 @@
+name: Release
+
+# Push a tag like v1.3.0 (matching "version" in extension/manifest.json) to get a
+# GitHub Release with the Chrome .zip and Firefox .xpi attached.
+#
+# Optional: add repository secrets AMO_JWT_ISSUER and AMO_JWT_SECRET (an API key
+# from addons.mozilla.org → Developer Hub → Manage API Keys) and the release also
+# gets a Mozilla-signed .xpi that installs permanently in normal Firefox.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tag must match the manifest version
+        run: |
+          v=$(node -p "require('./extension/manifest.json').version")
+          if [ "v$v" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match manifest version $v" >&2
+            exit 1
+          fi
+
+      - run: bash scripts/check-secrets.sh --all
+      - run: node scripts/build-extension.mjs
+      - run: npx --yes addons-linter dist/*-firefox.xpi
+
+      - name: Sign for Firefox (unlisted, only if AMO keys are set)
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        if: env.AMO_JWT_ISSUER != ''
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ff dist/signed
+          unzip -q dist/*-firefox.xpi -d /tmp/ff
+          npx --yes web-ext sign --channel=unlisted --source-dir /tmp/ff \
+            --artifacts-dir dist/signed --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
+          for f in dist/signed/*.xpi; do mv "$f" "dist/banterbox-${GITHUB_REF_NAME#v}-firefox-signed.xpi"; done
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.zip dist/*.xpi \
+            --title "BanterBox ${GITHUB_REF_NAME}" --generate-notes

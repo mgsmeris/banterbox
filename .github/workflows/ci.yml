@@ -1,0 +1,103 @@
+name: CI and deploy
+
+# On every push and pull request: secret scan + all tests + build the packages.
+# On pushes to main, once all of that passes: update the "deploy" branch, which
+# holds only the server code (server/ without tests). Point the web host's git
+# integration at that branch.
+on:
+  push:
+    branches-ignore: [deploy]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  secrets:
+    name: No settings, data or secrets in the repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/check-secrets.sh --all
+
+  test:
+    name: Tests (PHP 8.5 in WebAssembly + Chrome)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server/tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: server/tests/package-lock.json
+      - run: npm ci
+      - run: npx playwright test
+        env:
+          PW_CHANNEL: chrome
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: server/tests/playwright-report/
+          retention-days: 7
+
+  build:
+    name: Build browser packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/build-extension.mjs
+      - name: Lint the Firefox package (Mozilla's addons-linter)
+        run: npx --yes addons-linter dist/*-firefox.xpi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: browser-packages
+          path: dist/
+          retention-days: 30
+
+  deploy:
+    name: Update the deploy branch (server only)
+    needs: [secrets, test, build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Copy server/ (without tests) onto the deploy branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin deploy >/dev/null; then
+            git fetch origin deploy
+            git worktree add -B deploy /tmp/deploy origin/deploy
+          else
+            git worktree add --orphan -b deploy /tmp/deploy
+          fi
+
+          rsync -a --delete --exclude '.git' --exclude 'tests/' server/ /tmp/deploy/
+
+          cd /tmp/deploy
+          git add -A
+          # Same guard as everywhere else, on exactly what is about to be deployed.
+          bash "$GITHUB_WORKSPACE/scripts/check-secrets.sh"
+          if git diff --cached --quiet; then
+            echo "Server code unchanged, nothing to deploy."
+            exit 0
+          fi
+          git commit -m "Deploy ${GITHUB_SHA::7}: $(git -C "$GITHUB_WORKSPACE" log -1 --format=%s)"
+          git push origin deploy

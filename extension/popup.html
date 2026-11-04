@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>BanterBox</title>
+	<link rel="stylesheet" href="popup.css">
+	<script src="settings-core.js" defer></script>
+	<script src="popup.js" defer></script>
+</head>
+<body>
+	<header>
+		<img src="icons/icon-32.png" width="28" height="28" alt="">
+		<h1>BanterBox</h1>
+	</header>
+
+	<section>
+		<h2>Emoji list</h2>
+		<label class="toggle">
+			<input type="checkbox" id="remote">
+			<span>Load the BanterBox emoji list from sb.smeris.me</span>
+		</label>
+		<p class="hint">When this is off, BanterBox makes no requests to sb.smeris.me.</p>
+	</section>
+
+	<section>
+		<h2>My emojis <span class="count" id="count"></span></h2>
+		<p class="hint">Saved in this browser only.</p>
+		<ul id="own"></ul>
+		<form id="add" autocomplete="off">
+			<input id="name" type="text" placeholder="name, e.g. pepe_hands" maxlength="34" spellcheck="false" aria-label="Emoji name" required>
+			<div class="row">
+				<input id="url" type="url" placeholder="https://… image link" maxlength="500" spellcheck="false" aria-label="Image link" required>
+				<button type="submit" id="addBtn">Add</button>
+			</div>
+			<div class="error" id="error" role="status"></div>
+		</form>
+	</section>
+</body>
+</html>

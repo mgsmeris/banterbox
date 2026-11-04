@@ -1,0 +1,6 @@
+# Keep LF everywhere: the hook and scripts run on Linux (GitHub Actions, the web host).
+* text=auto eol=lf
+*.png binary
+*.gif binary
+*.webp binary
+*.jpg binary

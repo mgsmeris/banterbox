@@ -1,0 +1,17 @@
+{
+  "name": "banterbox-server-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "test": "playwright test",
+    "test:shots": "set SHOTS=1&& playwright test",
+    "deploy-check": "node deploy-check.mjs"
+  },
+  "devDependencies": {
+    "@php-wasm/node": "^3.1.62",
+    "@php-wasm/universal": "^3.1.62",
+    "@playwright/test": "^1.64.1",
+    "qrcode-generator": "^2.0.4"
+  }
+}

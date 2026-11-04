@@ -1,0 +1,4 @@
+# Only the admin front controller may run here.
+<FilesMatch "^index\.php$">
+	Require all granted
+</FilesMatch>

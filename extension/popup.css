@@ -1,0 +1,77 @@
+:root { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	width: 340px;
+	padding: 14px 14px 16px;
+	background: #1f2329;
+	color: #e6e8eb;
+	font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+header img { border-radius: 50%; }
+h1 { margin: 0; font-size: 17px; letter-spacing: -.01em; }
+
+section { border-top: 1px solid #343a43; padding-top: 10px; margin-top: 10px; }
+h2 {
+	margin: 0 0 6px;
+	color: #9aa3ad;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+}
+.count { font-weight: normal; }
+
+.toggle { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.toggle input { margin: 2px 0 0; accent-color: #e8622c; }
+.hint { margin: 4px 0 8px; color: #9aa3ad; font-size: 12px; }
+
+#own { list-style: none; margin: 0 0 8px; padding: 0; max-height: 240px; overflow-y: auto; }
+#own li { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #2c323a; }
+#own li:first-child { border-top: 0; }
+#own img { flex: none; max-width: 32px; max-height: 32px; width: auto; height: auto; }
+#own span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.remove {
+	border: 0;
+	background: transparent;
+	color: #9aa3ad;
+	font-size: 18px;
+	line-height: 1;
+	width: 26px;
+	height: 26px;
+	border-radius: 6px;
+	cursor: pointer;
+}
+.remove:hover { background: rgba(229, 72, 77, .15); color: #ff9a9d; }
+
+form { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; gap: 6px; }
+input[type=text], input[type=url] {
+	flex: 1;
+	min-width: 0;
+	padding: 7px 10px;
+	border-radius: 7px;
+	border: 1px solid #343a43;
+	background: #15181c;
+	color: inherit;
+	font: inherit;
+	outline: none;
+}
+input:focus { border-color: #e8622c; }
+button[type=submit] {
+	border: 0;
+	border-radius: 7px;
+	background: #e8622c;
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	padding: 0 14px;
+	cursor: pointer;
+}
+button[type=submit]:hover { background: #ff7a45; }
+button[type=submit]:disabled { opacity: .6; cursor: default; }
+.error { color: #ff9a9d; font-size: 12px; min-height: 1em; }

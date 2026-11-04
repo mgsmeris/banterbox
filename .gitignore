@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------------------
+# NEVER COMMIT: settings, data, secrets. Also enforced by .githooks/pre-commit
+# and the CI workflow (scripts/check-secrets.sh).
+# ---------------------------------------------------------------------------
+
+# Server settings (copy config.example.php instead; that one IS committed)
+config.php
+!config.example.php
+banterbox-private/
+
+# Server data: database, uploaded emojis, sessions, logs
+data/
+*.sqlite
+*.sqlite-*
+*.db
+sess_*
+*.log
+
+# Anything that looks like a secret
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+secrets.*
+
+# Local test data and tooling
+server/tests/.data/
+server/tests/node_modules/
+server/tests/test-results/
+server/tests/playwright-report/
+server/tests/screenshots/
+node_modules/
+
+# Packaged builds
+*.zip
+*.xpi
+*.crx
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+HANDOFF.md
+
+# Built packages (attached to GitHub Releases instead)
+dist/
+CLAUDE.md
+CLAUDE.md
+CLAUDE.md
