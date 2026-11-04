@@ -132,8 +132,8 @@ so installed copies update themselves. If
 you add the repository secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` (an API key
 from addons.mozilla.org → Developer Hub → *Manage API Keys*), it also attaches a
 Mozilla-signed `.xpi` that installs permanently in normal Firefox. Set
-The homepage download buttons come from `firefox_url` (your addons.mozilla.org page)
-and `chrome_url` (defaults to the latest GitHub Release) in `config.php`.
+The homepage download buttons always link to the newest GitHub Release
+(`banterbox-chrome.zip` and `banterbox-firefox-signed.xpi`).
 
 ## Accounts
 
