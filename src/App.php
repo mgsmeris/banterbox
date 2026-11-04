@@ -16,7 +16,9 @@ final class App
 		'setup_token' => '',
 		'allow_superuser_reset' => false,
 		'https_only' => true,
-		'download_url' => '',
+		'download_url' => '', // older name for chrome_url
+		'firefox_url' => 'https://github.com/mgsmeris/banterbox/releases/latest/download/banterbox-firefox-signed.xpi',
+		'chrome_url' => 'https://github.com/mgsmeris/banterbox/releases/latest',
 		'login_max_failures_per_user' => 5,
 		'login_max_failures_per_ip' => 20,
 		'login_window' => 900,

@@ -24,9 +24,17 @@ DirectoryIndex index.php
 	RewriteRule ^e/([a-f0-9]{32})\.(png|gif|webp)$ e.php?id=$1&ext=$2 [L]
 </IfModule>
 
+# Firefox add-on update manifest (update_url in the extension). Written by CI.
+AddType application/json .json
+
 <IfModule mod_headers.c>
 	Header always set X-Content-Type-Options "nosniff"
 	<FilesMatch "\.(css|js|png)$">
 		Header set Cache-Control "public, max-age=604800"
 	</FilesMatch>
+	<Files "update.json">
+		Header set Cache-Control "no-cache"
+		# The extension's update checker reads it from the add-on's own origin.
+		Header set Access-Control-Allow-Origin "*"
+	</Files>
 </IfModule>

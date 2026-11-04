@@ -124,12 +124,16 @@ same system user as the code.
 `dist/banterbox-<version>-firefox.xpi`, each with a manifest tuned for that browser.
 GitHub does this for you: every push to `main` builds both and puts them on the
 GitHub Release `v<version>` (version from `extension/manifest.json`). The same
-version again replaces the files; a new version makes a new release. If
+version again replaces the files; a new version makes a new release. The Firefox
+add-on is self-hosted (unlisted): with the AMO keys below, each new version is
+signed once, `banterbox-firefox-signed.xpi` goes on the release and CI commits
+`server/public/update.json`, which Firefox reads from https://sb.smeris.me/update.json,
+so installed copies update themselves. If
 you add the repository secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` (an API key
 from addons.mozilla.org → Developer Hub → *Manage API Keys*), it also attaches a
 Mozilla-signed `.xpi` that installs permanently in normal Firefox. Set
-`download_url` in `config.php` to `https://github.com/<you>/<repo>/releases/latest`
-to show a Download button on the homepage.
+The homepage download buttons come from `firefox_url` (your addons.mozilla.org page)
+and `chrome_url` (defaults to the latest GitHub Release) in `config.php`.
 
 ## Accounts
 
