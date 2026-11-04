@@ -95,6 +95,40 @@ S.onChange((next) => {
 	render();
 });
 
+// ------------------------------------------------------------ updates
+
+const installed = chrome.runtime.getManifest().version;
+$('version').textContent = 'You have version ' + installed + '.';
+
+function isNewer(a, b) {
+	const x = a.split('.').map(Number);
+	const y = b.split('.').map(Number);
+	for (let i = 0; i < Math.max(x.length, y.length); i++) {
+		if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+	}
+	return false;
+}
+
+async function renderUpdate() {
+	const { update, updateCheck } = await chrome.storage.local.get(['update', 'updateCheck']);
+	const on = updateCheck !== false;
+	$('updateCheck').checked = on;
+	const latest = update && typeof update.latest === 'string' && /^\d{1,5}(\.\d{1,5}){0,3}$/.test(update.latest) ? update.latest : '';
+	const show = on && latest && isNewer(latest, installed);
+	const link = $('update');
+	link.hidden = !show;
+	if (show) link.textContent = 'BanterBox ' + latest + ' is out. Get the update →';
+}
+
+$('updateCheck').addEventListener('change', async () => {
+	await chrome.storage.local.set({ updateCheck: $('updateCheck').checked });
+	renderUpdate();
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+	if (area === 'local' && ('update' in changes || 'updateCheck' in changes)) renderUpdate();
+});
+renderUpdate();
+
 S.read().then((s) => {
 	settings = s;
 	render();

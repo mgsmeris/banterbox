@@ -15,16 +15,15 @@ if (!in_array(Http::method(), ['GET', 'HEAD'], true)) {
 }
 
 $emojis = Emojis::all();
-$download = (string) App::config('download_url');
+$https = static fn (string $u): string => preg_match('~^https://[^\s"<>]+$~i', $u) ? $u : '';
+$firefox = $https((string) App::config('firefox_url'));
+$chrome = $https((string) (App::config('download_url') ?: App::config('chrome_url')));
 
 // Screenshots are shown only once their files are in public/assets/.
 $shots = array_filter([
 	['screen-menu.png', "The emoji menu in the shoutbox, in the forum's own style"],
 	['screen-popup.png', 'Settings in the extension: the emoji list switch and your own emojis'],
 ], static fn (array $s): bool => is_file(App::publicDir() . '/assets/' . $s[0]));
-if ($download !== '' && !preg_match('~^https://~i', $download)) {
-	$download = '';
-}
 
 Http::pageHeaders(false);
 View::head('BanterBox: a better Perpheads shoutbox');
@@ -36,8 +35,11 @@ View::head('BanterBox: a better Perpheads shoutbox');
 			<h1>BanterBox</h1>
 			<p class="lead">A small browser extension that fixes the Perpheads shoutbox and gives it better emojis.</p>
 			<div class="actions">
-				<?php if ($download !== ''): ?>
-					<a class="btn btn-primary" href="<?= View::e($download) ?>" rel="noopener">Download</a>
+				<?php if ($firefox !== ''): ?>
+					<a class="btn btn-primary" href="<?= View::e($firefox) ?>" rel="noopener">Get it for Firefox</a>
+				<?php endif ?>
+				<?php if ($chrome !== ''): ?>
+					<a class="btn btn-primary" href="<?= View::e($chrome) ?>" rel="noopener">Get it for Chrome</a>
 				<?php endif ?>
 				<?php if ($shots): ?><a class="btn" href="#screenshots">Screenshots</a><?php endif ?>
 				<a class="btn" href="#install">How to install</a>
@@ -89,8 +91,8 @@ View::head('BanterBox: a better Perpheads shoutbox');
 	<section id="install" class="card install">
 		<h2>Install</h2>
 		<ol>
-			<li><strong>Firefox (128 or newer):</strong> open <code>about:debugging</code>, choose <em>This Firefox</em>, then <em>Load Temporary Add-on</em> and pick <code>manifest.json</code> in the <code>extension</code> folder.</li>
-			<li><strong>Chrome, Edge, Brave:</strong> open <code>chrome://extensions</code>, turn on <em>Developer mode</em>, click <em>Load unpacked</em> and pick the <code>extension</code> folder.</li>
+			<li><strong>Firefox:</strong> <?php if ($firefox !== ''): ?><a href="<?= View::e($firefox) ?>" rel="noopener">download the signed add-on</a><?php else: ?>download the signed add-on<?php endif ?> and open it in Firefox (or drag it onto a Firefox window), then click <em>Add</em>. It updates by itself.</li>
+			<li><strong>Chrome, Edge, Brave:</strong> download the <code>chrome.zip</code> file<?php if ($chrome !== ''): ?> from <a href="<?= View::e($chrome) ?>" rel="noopener">the latest release</a><?php endif ?> and unzip it. Open <code>chrome://extensions</code>, turn on <em>Developer mode</em>, click <em>Load unpacked</em> and pick the unzipped folder.</li>
 			<li>Reload Perpheads. The Kappa button appears in the shoutbox toolbar.</li>
 			<li>Click the BanterBox icon in your browser's toolbar for the settings: the emoji list switch and your own emojis.</li>
 		</ol>

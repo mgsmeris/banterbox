@@ -26,22 +26,18 @@ The emoji menu takes on the look of whatever forum style you've picked.
 
 ## Install
 
-Download the latest version from the [Releases page](../../releases/latest).
-
 ### Chrome, Edge, Brave
 
-1. Download the `chrome.zip` file and unzip it.
+1. Download the `chrome.zip` file from the [Releases page](../../releases/latest)
+   and unzip it.
 2. Go to `chrome://extensions` and turn on **Developer mode** (top right).
 3. Click **Load unpacked** and pick the unzipped folder.
 
 ### Firefox
 
-Download the `firefox-signed.xpi` file and open it in Firefox. Firefox will ask if
-you want to add BanterBox; say yes.
-
-If you only see a `firefox.xpi` without "signed" in the name, normal Firefox won't
-accept it. You can load it for one session through `about:debugging` →
-**This Firefox** → **Load Temporary Add-on…**.
+Download `banterbox-firefox-signed.xpi` from the
+[Releases page](../../releases/latest) and open it in Firefox (or drag it onto a
+Firefox window), then click **Add**. It updates by itself.
 
 ### Then
 

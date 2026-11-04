@@ -34,6 +34,8 @@ const referenced = [
 	...Object.values(manifest.action?.default_icon || {}),
 	manifest.action?.default_popup,
 	...(manifest.content_scripts || []).flatMap((c) => c.js || []),
+	...(manifest.background?.scripts || []),
+	manifest.background?.service_worker,
 ].filter(Boolean);
 for (const f of referenced) {
 	if (!files.includes(f)) throw new Error(`manifest.json refers to a missing file: ${f}`);
@@ -44,14 +46,19 @@ for (const f of referenced) {
 function chromeManifest() {
 	const m = structuredClone(manifest);
 	delete m.browser_specific_settings; // Chrome only warns about it
+	delete m.background.scripts; // Chrome uses the service worker
 	return m;
 }
 
 function firefoxManifest() {
 	const m = structuredClone(manifest);
+	delete m.background.service_worker; // Firefox runs background scripts instead
 	m.browser_specific_settings = {
 		gecko: {
 			...(manifest.browser_specific_settings?.gecko || {}),
+			// Self-hosted (unlisted) add-on: Firefox checks this file for new versions.
+			// CI writes it to server/public/update.json after signing each new version.
+			update_url: 'https://sb.smeris.me/update.json',
 			// Required by addons.mozilla.org for new add-ons: BanterBox collects nothing.
 			data_collection_permissions: { required: ['none'] },
 		},
