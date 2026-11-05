@@ -633,7 +633,9 @@
 		}
 
 		// Right after the image button if there is one, else at the end of the first group.
+		// Froala also marks buttons it regroups with fr-hidden, ours included, so undo that.
 		function placeButton(toolbar, btn) {
+			if (btn.classList.contains('fr-hidden')) btn.classList.remove('fr-hidden');
 			const after = toolbar.querySelector('[data-cmd="insertImage"]');
 			if (after) {
 				if (after.nextElementSibling !== btn) after.after(btn);
@@ -673,10 +675,11 @@
 
 			placeButton(toolbar, btn);
 
-			// Froala regroups its own buttons on resize and leaves ours behind; move it back
-			// straight away so it never flickers out.
-			new MutationObserver(() => placeButton(toolbar, btn))
-				.observe(toolbar, { childList: true, subtree: true });
+			// Froala regroups its own buttons on resize: it leaves ours behind or hides it.
+			// Put it back straight away so it never flickers out.
+			const keep = new MutationObserver(() => placeButton(toolbar, btn));
+			keep.observe(toolbar, { childList: true, subtree: true });
+			keep.observe(btn, { attributes: true, attributeFilter: ['class'] });
 		}
 
 		function addStyles() {
