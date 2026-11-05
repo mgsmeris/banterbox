@@ -45,7 +45,7 @@ final class View
 	{
 		?>
 <footer class="site-footer">
-	<span>BanterBox · not affiliated with Perpheads or Siropu</span>
+	<span>BanterBox · not affiliated with Perpheads or Siropu · <a href="<?= self::e(App::url('privacy')) ?>">Privacy</a></span>
 </footer>
 </body>
 </html>
