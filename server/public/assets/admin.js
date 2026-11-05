@@ -68,7 +68,31 @@ document.addEventListener('DOMContentLoaded', () => {
 				}
 			}
 		};
-		input.addEventListener('change', update);
+		// WebM videos are turned into animated GIFs here, before uploading.
+		const convert = async () => {
+			const W = window.BanterBoxWebm;
+			const files = [...input.files];
+			if (!W || !files.some(W.isWebm)) return update();
+			const form = input.form;
+			const submit = form && form.querySelector('[type="submit"]');
+			if (submit) submit.disabled = true;
+			const out = new DataTransfer();
+			const failed = [];
+			for (const f of files) {
+				if (!W.isWebm(f)) { out.items.add(f); continue; }
+				label.textContent = 'Converting ' + f.name + ' to GIF…';
+				try {
+					out.items.add(await W.toGif(f));
+				} catch (err) {
+					failed.push(f.name + ': ' + err.message);
+				}
+			}
+			input.files = out.files;
+			if (submit) submit.disabled = false;
+			update();
+			if (failed.length) label.textContent = failed.join(' · ');
+		};
+		input.addEventListener('change', convert);
 		['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, () => drop.classList.add('is-over')));
 		['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, () => drop.classList.remove('is-over')));
 	}

@@ -13,7 +13,9 @@ final class Http
 	public static function pageHeaders(bool $private): void
 	{
 		header('Content-Type: text/html; charset=utf-8');
+		// Admin pages may play blob: videos: the WebM to GIF converter decodes them locally.
 		header("Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+			. ($private ? "media-src blob:; " : '')
 			. "connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 		self::commonHeaders();
 		header('X-Frame-Options: DENY');

@@ -142,9 +142,10 @@ final class Images
 		Imagick::setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 128 * 1024 * 1024);
 		Imagick::setResourceLimit(Imagick::RESOURCETYPE_MAP, 128 * 1024 * 1024);
 		Imagick::setResourceLimit(Imagick::RESOURCETYPE_AREA, 16 * 1024 * 1024);
-		if (defined('Imagick::RESOURCETYPE_TIME')) {
-			Imagick::setResourceLimit(Imagick::RESOURCETYPE_TIME, 20);
-		}
+		// No RESOURCETYPE_TIME limit: ImageMagick counts it from the first image the
+		// PHP process ever handled, not per call, so in a long-running PHP-FPM worker
+		// every animation fails once the worker is older than the limit. The byte,
+		// pixel and frame limits above already bound the work.
 
 		$im = new Imagick();
 		try {
@@ -180,7 +181,9 @@ final class Images
 		} catch (UserError $e) {
 			throw $e;
 		} catch (\ImagickException $e) {
-			throw new UserError('That animation could not be decoded.');
+			// Only admins see this message; ImageMagick's reason makes failures diagnosable.
+			error_log('[BanterBox] Imagick: ' . $e->getMessage());
+			throw new UserError('That animation could not be decoded (' . self::imagickReason($e) . ').');
 		} finally {
 			$im->clear();
 		}
@@ -189,6 +192,14 @@ final class Images
 			throw new UserError('The resized animation is too large.');
 		}
 		return ['bytes' => $blob, 'ext' => strtolower($format), 'width' => self::SIZE, 'height' => self::SIZE, 'animated' => true];
+	}
+
+	/** ImageMagick's error, shortened and without file paths. */
+	private static function imagickReason(\ImagickException $e): string
+	{
+		$msg = preg_replace('~(/[^\s\x60\x27\x22]+)+~', '…', $e->getMessage()) ?? '';
+		$msg = trim(preg_replace('~\s+~', ' ', $msg) ?? '');
+		return $msg === '' ? 'no details' : mb_substr($msg, 0, 160);
 	}
 
 	/**

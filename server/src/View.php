@@ -35,7 +35,8 @@ final class View
 	<link rel="icon" href="<?= self::e(self::asset('kappa-32.png')) ?>">
 	<link rel="stylesheet" href="<?= self::e(self::asset('site.css')) ?>">
 	<?php if ($qr): ?><script src="<?= self::e(self::asset('vendor/qrcode.js')) ?>" defer></script><?php endif ?>
-	<?php if ($admin): ?><script src="<?= self::e(self::asset('admin.js')) ?>" defer></script><?php endif ?>
+	<?php if ($admin): ?><script src="<?= self::e(self::asset('webm-gif.js')) ?>" defer></script>
+	<script src="<?= self::e(self::asset('admin.js')) ?>" defer></script><?php endif ?>
 </head>
 <body class="<?= $admin ? 'is-admin' : 'is-public' ?>">
 <?php

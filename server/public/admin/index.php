@@ -464,12 +464,12 @@ page('Emojis', $user, static function () use ($emojis): void {
 			<?= View::csrfField() ?>
 			<input type="hidden" name="MAX_FILE_SIZE" value="<?= Images::MAX_BYTES ?>">
 			<label class="drop" data-drop>
-				<input type="file" name="files[]" accept="image/png,image/jpeg,image/gif,image/webp" multiple required data-files>
+				<input type="file" name="files[]" accept="image/png,image/jpeg,image/gif,image/webp,video/webm,.webm" multiple required data-files>
 				<span data-drop-label>Drop images here or click to choose</span>
 			</label>
 			<label>Name <span class="muted">(single upload only, otherwise taken from the file names)</span>
 				<input name="name" maxlength="34" pattern=":?[a-z0-9_]{2,32}:?" placeholder="pog_champ" data-name-input></label>
-			<p class="muted">PNG, JPEG, GIF or WebP, up to <?= Images::MAX_BYTES / 1024 ?> KB and <?= Images::MAX_INPUT_SIDE ?> px. Every emoji is saved at <?= Images::SIZE ?>×<?= Images::SIZE ?> px (scaled to fit, never stretched). <?= View::e($animatedNote) ?></p>
+			<p class="muted">PNG, JPEG, GIF, WebP or WebM (turned into a GIF in your browser first), up to <?= Images::MAX_BYTES / 1024 ?> KB and <?= Images::MAX_INPUT_SIDE ?> px. Every emoji is saved at <?= Images::SIZE ?>×<?= Images::SIZE ?> px (scaled to fit, never stretched). <?= View::e($animatedNote) ?></p>
 			<button class="btn btn-primary" type="submit">Upload</button>
 		</form>
 	</div>
