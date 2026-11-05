@@ -332,7 +332,6 @@ input:invalid:not(:placeholder-shown):not(:focus) { border-color: var(--danger);
 
 .download { margin-bottom: 1.5rem; }
 .download .section-head { margin-bottom: .4rem; }
-.download-intro { margin: 0 0 1.2rem; }
 .tag {
 	display: inline-block;
 	margin-left: .3em;
@@ -352,18 +351,9 @@ input:invalid:not(:placeholder-shown):not(:focus) { border-color: var(--danger);
 .browser h3 { margin: 0 0 .9rem; font-size: 1.1rem; }
 .browser ol { margin: 1rem 0 1.2rem; padding-left: 1.2rem; color: var(--muted); }
 .browser li { margin-bottom: .3rem; }
-.store-soon {
-	margin-top: auto;
-	align-self: stretch;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 1rem;
-	padding: .6em 1em;
-	border: 1px dashed var(--line);
-	border-radius: 999px;
-	color: var(--muted);
-	cursor: not-allowed;
-	user-select: none;
+.btn-add { align-self: stretch; justify-content: center; padding: .8em 1.2em; font-size: 1.05rem; font-weight: 600; }
+.signed { margin: .6rem 0 0; font-size: .9rem; }
+.signed .check {
+	display: inline-grid; place-items: center; width: 1.2em; height: 1.2em; margin-right: .25em;
+	border-radius: 50%; background: var(--ok); color: #fff; font-size: .75em; font-weight: 700; vertical-align: -.1em;
 }
-.store-soon .soon { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; opacity: .8; }

@@ -19,6 +19,14 @@ $emojis = Emojis::all();
 const RELEASES = 'https://github.com/mgsmeris/banterbox/releases';
 $chrome = RELEASES . '/latest/download/banterbox-chrome.zip';
 $firefox = RELEASES . '/latest/download/banterbox-firefox-signed.xpi';
+// Newest signed Firefox version, from the update file CI writes.
+$version = '';
+$update = @file_get_contents(App::publicDir() . '/update.json');
+$list = is_string($update) ? (json_decode($update, true)['addons']['banterbox@smeris.me']['updates'] ?? null) : null;
+if (is_array($list) && $list) {
+	$v = (string) (end($list)['version'] ?? '');
+	$version = preg_match('/^\d{1,5}(\.\d{1,5}){0,3}$/', $v) ? $v : '';
+}
 
 // Screenshots are shown only once their files are in public/assets/.
 $shots = array_filter([
@@ -36,7 +44,7 @@ View::head('BanterBox: a better Perpheads shoutbox');
 			<h1>BanterBox</h1>
 			<p class="lead">A small browser extension that fixes the Perpheads shoutbox and gives it better emojis.</p>
 			<div class="actions">
-				<a class="btn btn-primary" href="#download">Download the beta</a>
+				<a class="btn btn-primary" href="#download">Install the beta</a>
 				<?php if ($shots): ?><a class="btn" href="#screenshots">Screenshots</a><?php endif ?>
 				<a class="btn" href="#emojis">Browse emojis</a>
 			</div>
@@ -85,32 +93,27 @@ View::head('BanterBox: a better Perpheads shoutbox');
 
 	<section id="download" class="download">
 		<div class="section-head">
-			<h2>Download <span class="tag">Beta</span></h2>
+			<h2>Install <span class="tag">Beta</span></h2>
 		</div>
-		<p class="muted download-intro">BanterBox is in beta, so for now you install it by hand. Store versions are coming later.</p>
 		<div class="download-grid">
 			<article class="card browser">
-				<h3>Chrome, Edge, Brave</h3>
-				<a class="btn btn-primary" href="<?= View::e($chrome) ?>" rel="noopener">Download for Chrome (.zip)</a>
+				<h3>Firefox</h3>
+				<a class="btn btn-primary btn-add" href="<?= View::e($firefox) ?>" rel="noopener">Add to Firefox</a>
+				<p class="signed"><span class="check" aria-hidden="true">✓</span> Signed by Mozilla<?= $version !== '' ? ' · version ' . View::e($version) : '' ?></p>
 				<ol>
-					<li>Unzip the file.</li>
+					<li>Firefox asks for permission: click <em>Continue to installation</em>.</li>
+					<li>Click <em>Add</em>. BanterBox then updates itself.</li>
+				</ol>
+			</article>
+			<article class="card browser">
+				<h3>Chrome, Edge, Brave</h3>
+				<a class="btn btn-primary btn-add" href="<?= View::e($chrome) ?>" rel="noopener">Add to Chrome</a>
+				<p class="signed muted">Chrome Web Store version in review. Until then you install it by hand:</p>
+				<ol>
+					<li>Unzip the downloaded file.</li>
 					<li>Open <code>chrome://extensions</code> and turn on <em>Developer mode</em>.</li>
 					<li>Click <em>Load unpacked</em> and pick the unzipped folder.</li>
 				</ol>
-				<div class="store-soon" aria-disabled="true">
-					<span>Chrome Web Store</span><span class="soon">Coming later</span>
-				</div>
-			</article>
-			<article class="card browser">
-				<h3>Firefox</h3>
-				<a class="btn btn-primary" href="<?= View::e($firefox) ?>" rel="noopener">Download for Firefox (.xpi)</a>
-				<ol>
-					<li>Open the downloaded file in Firefox, or drag it onto a Firefox window.</li>
-					<li>Click <em>Add</em>.</li>
-				</ol>
-				<div class="store-soon" aria-disabled="true">
-					<span>Firefox Add-ons</span><span class="soon">Coming later</span>
-				</div>
 			</article>
 		</div>
 		<p class="muted">Then reload Perpheads: the Kappa button appears in the shoutbox toolbar. Click the BanterBox icon in your browser's toolbar for the settings. Older versions are on <a href="<?= View::e(RELEASES) ?>" rel="noopener">GitHub</a>.</p>

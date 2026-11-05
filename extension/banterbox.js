@@ -201,6 +201,8 @@
 	const CUSTOM_MAX = 200;
 	const EMOJI_INSERT_HEIGHT = 32; // px, roughly a line of chat text
 	const NAME_RE = /^[a-z0-9_]{2,32}$/;
+	const COLOR_RE = /^#[0-9a-f]{6}$/;
+	const PAINT_ICON = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAD00lEQVR4AaxXPU8bQRB9IGEwIH9BZUuRkWlApMMSooIUlFAhqkiJBCkpKIiEC0xhRCj4AaYKHaKM0yAk25EgSCQKBSINiWmoEFggg7FTOPvW3tPZvvOdMda9m53Z2Zl3u3uz53aY/GLrsdJLwiQNTAlwwNLSEl4CjCVQEqi7GhJQ3ouLi9ja2gKls8upzE1JMZv0ryNhi0ChUEBkJYLt+DaDPAvj4+MwImGLwM7nnaqk19fXIKqMFsrY2BiMSNgikEwlZfjJN5NSFotFKZu9kcTIyEjVTNgiwEQXfy4oNDRDgsvHvUPMTM/I5awEKkkCYm24OYiKvV7s7u4in8/XdxhYmIhQXSRvBPa3MzmnhYqAIYmjoyPc3d3h+PuxcAH49IRUam4qsYgL1Q4EAlVj9GPbxfS0nZ2dqXVhOI3E1dUVdRTFG7DxaROrUgMeHh4qrWrBV5VPSquIS6FhYGBAtpmc4ylpkEsgnNuo5J/yiogkkc1mkclk2GUJJp+bm8PBwQGWPy5L//Pf51XjSYLJe3p6tIeQBOhNEgyiliOy8o9mzVEquhsDKXVjw4m+vj7E43EkEglsitk6+XEix+r9IH6Mr7dpBEQfd2fbzPQvIMrJXkV49CvNDcHkq8L95uYGe3t7SHxJgMnVICZUbSX1tioCZYdoG8SFaBQQq65I/MSC0MtXLpcDoZKn00mxySLI/M1A1Qx66hNRN4IBAboJBuJSJNYQRe0vlZoEn5zJ2V4TLklRsHp7e6WrneR0NCEAsRk7AJLAGvgLI0AhkRLJJyaSaDU5g5kSYGdsvUMSUdKxHhN6DA5HDKwNBNvc9ff39+DutvvkjE8YEhBFpDQ1NaV9C8zPz4OvGA8TJvD7X8Hj8XC8LFB8XVliubvtvrZysLgZEhB2w0utr2FnxUgSLGwV1VLYItDZ2WkZ6LkODQns7++DSKfTssjwPT88PBTr/w2np6e4vLyURaeVDxVDAqyKTOz3+8EznHJ2dhZDQ68lgsEgggJerxcLH8r1QV98mpkNQwK1AZiIhcfnc8kun9cnpdmNG9Wsr9ZuScDlcqG/vx+hUAhs2yVRm8hMtySgBvL45FtAEv6AX5rdbreUrdwsCfCLmOjuLshCw4LTSsLasZYE+AoSj4+d8njlDKggVntB+TWSlgTUYIfDUTUDXc7yoaP6nystCXD6GZx7gFI/A9RbhSUBTr9KwjKr2k/5nGq2JBsS4Ommj05dbUIuwW32Vt+ttXkWWEE5mxJgNRweGpaf1h63B4OhQVDnqUe8f/eWn3Da/8XwaFh8wtWjkZ0k/gMAAP//ShpCKgAAAAZJREFUAwA20fQ3JwQSogAAAABJRU5ErkJggg==';
 	const KAPPA_ICON = 'data:image/png;base64,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';
 
 	const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -231,13 +233,14 @@
 			seen.add(e.name);
 			custom.push({ name: e.name, url: e.url, w, h });
 		}
-		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, custom };
+		const color = typeof s.color === 'string' && COLOR_RE.test(s.color.toLowerCase()) ? s.color.toLowerCase() : '';
+		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, color, custom };
 	}
 
 	/**
-	 * User settings: { asked, remote, updates, custom: [{name, url, w, h}] }, edited
+	 * User settings: { asked, remote, updates, color, custom: [{name, url, w, h}] }, edited
 	 * in the extension popup and handed over by storage-bridge.js. Read-only here:
-	 * the consent prompt's Save button is handled by the bridge. If the bridge
+	 * the consent prompt's and colour menu's buttons are handled by the bridge. If the bridge
 	 * doesn't answer (e.g. the script was injected by hand), the defaults apply,
 	 * and those make no requests (asked is false).
 	 */
@@ -592,10 +595,193 @@
 		store.onChange((next) => {
 			const remote = next.asked && next.remote;
 			if (!remote) forgetRemote();
+			showColor(next.color);
+			if (menu && menu.kind === 'color') { close(); return; }
 			if (!menu) return;
 			menu.rerender();
 			if (remote) load().then(() => menu && menu.rerender(), () => menu && menu.rerender());
 		});
+
+
+		// ------------------------------------------------ default colour
+
+		// The two forum styles, measured from perpheads' own CSS (Core Dark and Core).
+		const STYLES = [
+			{ name: 'Dark style', bg: '#262626', text: '#929292', user: '#ececec', muted: '#6e6e6e' },
+			{ name: 'Light style', bg: '#ffffff', text: '#1d1d1d', user: '#1d1d1d', muted: '#8a8a8a' },
+		];
+
+		function luminance(hex) {
+			const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+				.map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+			return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+		}
+		const contrast = (a, b) => {
+			const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+			return (x + 0.05) / (y + 0.05);
+		};
+		const myName = () => {
+			const el = document.querySelector('.p-navgroup-link--user .p-navgroup-linkText');
+			return (el && el.textContent.trim()) || 'You';
+		};
+
+		// Saving and clearing are handled by storage-bridge.js (real clicks only); the
+		// new colour then comes back through the store and the menu closes.
+		function openColor(btn) {
+			const current = store.get().color;
+			const picker = make('input', { type: 'color', class: 'bb-color-picker', value: current || '#e8622c', 'aria-label': 'Pick a colour' });
+			const hex = make('input', {
+				type: 'text', class: 'input bb-color-hex', value: current, placeholder: '#e8622c',
+				maxLength: 7, spellcheck: false, autocomplete: 'off', 'aria-label': 'Hex code', dataset: { bbColor: 'value' },
+			});
+			const save = make('button', { type: 'button', class: 'button button--primary', text: 'Save', dataset: { bbColor: 'save' } });
+			const clear = make('button', { type: 'button', class: 'button', text: 'No colour', dataset: { bbColor: 'clear' } });
+			const error = make('div', { class: 'bb-color-error', role: 'status' });
+
+			const previews = STYLES.map((st) => {
+				const label = make('div', { class: 'bb-color-style', text: st.name });
+				const user = make('b', { text: myName() });
+				const time = make('span', { class: 'bb-color-time', text: 'just now' });
+				const msg = make('div', { class: 'bb-color-msg', text: 'This is how your messages look.' });
+				const warn = make('div', { class: 'bb-color-warn' });
+				const box = make('div', { class: 'bb-color-preview' }, label, make('div', {}, user, ' ', time), msg, warn);
+				box.style.background = st.bg;
+				label.style.color = st.muted;
+				user.style.color = st.user;
+				time.style.color = st.muted;
+				return { st, box, msg, warn };
+			});
+
+			// Accepts "e8622c", "#E8622C" and the short "#e62".
+			const normalize = (v) => {
+				v = v.trim().toLowerCase();
+				if (/^[0-9a-f]{3}$|^[0-9a-f]{6}$/.test(v)) v = '#' + v;
+				if (/^#[0-9a-f]{3}$/.test(v)) v = '#' + v.slice(1).split('').map((c) => c + c).join('');
+				return v;
+			};
+			const render = () => {
+				const v = normalize(hex.value);
+				const ok = v === '' || COLOR_RE.test(v);
+				error.textContent = ok ? '' : 'Use a hex code like #e8622c.';
+				save.disabled = !ok;
+				if (ok && v && picker.value !== v) picker.value = v;
+				for (const p of previews) {
+					const color = ok && v ? v : p.st.text;
+					p.msg.style.color = color;
+					p.warn.textContent = ok && v && contrast(color, p.st.bg) < 3 ? 'Hard to read in this style.' : '';
+				}
+			};
+			const tidy = () => {
+				const v = normalize(hex.value);
+				hex.value = v;
+				if (COLOR_RE.test(v)) picker.value = v;
+				render();
+			};
+			picker.addEventListener('input', () => { hex.value = picker.value; render(); });
+			hex.addEventListener('input', render);
+			hex.addEventListener('change', tidy);
+			// Tidy the code before the bridge reads it (mousedown comes before click).
+			save.addEventListener('mousedown', tidy);
+
+			const body = make('div', { class: 'menu-row bb-color' },
+				make('div', { class: 'bb-color-pick' }, picker, hex),
+				error,
+				...previews.map((p) => p.box),
+				make('p', { class: 'u-muted', text: 'Every message you send gets this colour. Text you colour yourself keeps its own.' }),
+				make('div', { class: 'bb-color-actions' }, save, clear));
+			const el = make('div', { class: 'menu is-active bb-emoji-menu bb-color-menu', role: 'dialog', 'aria-label': 'Default text colour' },
+				make('div', { class: 'menu-content' }, make('h3', { class: 'menu-header', text: 'Default text colour' }), body));
+			document.body.append(el);
+
+			const place = () => {
+				const r = btn.getBoundingClientRect();
+				const mw = el.offsetWidth, mh = el.offsetHeight;
+				let top = r.bottom + 6;
+				if (top + mh > window.innerHeight - 8 && r.top - mh - 6 > 8) top = r.top - mh - 6;
+				el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - mw - 8)) + 'px';
+				el.style.top = Math.max(8, top) + 'px';
+			};
+			const outside = (ev) => { if (!el.contains(ev.target) && !btn.contains(ev.target)) close(); };
+			const keys = (ev) => { if (ev.key === 'Escape') { ev.preventDefault(); close(); } };
+			document.addEventListener('mousedown', outside, true);
+			document.addEventListener('keydown', keys, true);
+			window.addEventListener('resize', place);
+			menu = { kind: 'color', el, btn, outside, keys, place, rerender: () => {} };
+			btn.classList.add('fr-active');
+			btn.setAttribute('aria-expanded', 'true');
+			render();
+			place();
+			hex.focus({ preventScroll: true });
+		}
+
+		// A thin bar under the paint button shows the colour that's on.
+		function showColor(color) {
+			document.querySelectorAll('.bb-color-btn').forEach((b) => {
+				b.style.boxShadow = color ? 'inset 0 -3px 0 ' + color : '';
+				b.title = color ? 'Default text colour: ' + color : 'Default text colour';
+			});
+		}
+
+		/** Wraps the message in the colour, block by block, so XenForo turns it into [COLOR]. */
+		function colorize(html, color) {
+			const trimmed = html.trim();
+			if (!trimmed) return html;
+			if (trimmed[0] !== '<') {
+				// BB code editor: the message is BB code already.
+				return trimmed.startsWith('/') ? html : '[COLOR=' + color + ']' + html + '[/COLOR]';
+			}
+			const tpl = document.createElement('template');
+			tpl.innerHTML = html;
+			const root = tpl.content;
+			if (root.textContent.trim().startsWith('/')) return html; // chat commands like /me
+			const wrap = (nodes) => {
+				if (!nodes.some((n) => n.nodeType === 1 || n.textContent.trim())) return;
+				const span = document.createElement('span');
+				span.setAttribute('style', 'color: ' + color);
+				nodes[0].before(span);
+				span.append(...nodes);
+			};
+			const walk = (parent) => {
+				let run = [];
+				for (const n of [...parent.childNodes]) {
+					if (n.nodeType === 1 && /^(P|DIV|LI|UL|OL|H[1-6])$/.test(n.tagName)) {
+						wrap(run);
+						run = [];
+						walk(n);
+					} else if (n.nodeType === 1 && n.tagName === 'BLOCKQUOTE') {
+						wrap(run); // quoted text keeps its own look
+						run = [];
+					} else {
+						run.push(n);
+					}
+				}
+				wrap(run);
+			};
+			walk(root);
+			const out = document.createElement('div');
+			out.append(root);
+			return out.innerHTML;
+		}
+
+		// Siropu sends a new message with XF.ajax('POST', '.../chat/submit', { message_html, ... }).
+		// The colour is added right there, so the editor itself is never touched.
+		if (!XF.ajax.__banterboxColor) {
+			const realAjax = XF.ajax;
+			const ajax = function (method, url, data, ...rest) {
+				const color = store.get().color;
+				if (color && typeof url === 'string' && /[?/]chat\/submit(?:[&#]|$)/.test(url)
+					&& data && typeof data === 'object' && typeof data.message_html === 'string') {
+					try {
+						data = { ...data, message_html: colorize(data.message_html, color) };
+					} catch (err) {
+						console.warn(TAG, 'could not apply the colour:', err);
+					}
+				}
+				return realAjax.call(this, method, url, data, ...rest);
+			};
+			ajax.__banterboxColor = true;
+			XF.ajax = ajax;
+		}
 
 		// ---------------------------------------------------- toolbar
 
@@ -634,8 +820,9 @@
 
 		// Right after the image button if there is one, else at the end of the first group.
 		// Froala also marks buttons it regroups with fr-hidden, ours included, so undo that.
-		function placeButton(toolbar, btn) {
-			if (btn.classList.contains('fr-hidden')) btn.classList.remove('fr-hidden');
+		// The paint button goes right after the Kappa button.
+		function placeButton(toolbar, btn, paint) {
+			for (const b of [btn, paint]) if (b.classList.contains('fr-hidden')) b.classList.remove('fr-hidden');
 			const after = toolbar.querySelector('[data-cmd="insertImage"]');
 			if (after) {
 				if (after.nextElementSibling !== btn) after.after(btn);
@@ -643,12 +830,14 @@
 				const group = toolbar.querySelector('.fr-btn-grp') || toolbar;
 				if (btn.parentElement !== group) group.append(btn);
 			}
+			if (btn.nextElementSibling !== paint) btn.after(paint);
 		}
 
 		function addButton(toolbar) {
 			widenToolbar(toolbar);
 			const existing = toolbar.querySelector('.bb-emoji-btn');
-			if (existing) { placeButton(toolbar, existing); return; }
+			const existingPaint = toolbar.querySelector('.bb-color-btn');
+			if (existing && existingPaint) { placeButton(toolbar, existing, existingPaint); return; }
 			const icon = make('img', { src: KAPPA_ICON, alt: '', width: 20, height: 20 });
 			const btn = make('button', {
 				type: 'button', class: 'fr-command fr-btn bb-emoji-btn', title: 'BanterBox emojis',
@@ -664,22 +853,33 @@
 					savedFor = target.ed;
 				}
 			});
-			btn.addEventListener('click', (ev) => {
+			const toggle = (b, openFn) => (ev) => {
 				ev.preventDefault();
 				ev.stopPropagation();
-				if (menu) close();
-				else open(btn);
-			});
+				const wasOpen = menu && menu.btn === b;
+				close();
+				if (!wasOpen) openFn(b);
+			};
+			btn.addEventListener('click', toggle(btn, open));
 			// Warm the list on hover (load() checks the privacy setting first).
 			btn.addEventListener('mouseenter', () => { load().catch(() => {}); }, { once: true });
 
-			placeButton(toolbar, btn);
+			const paint = make('button', {
+				type: 'button', class: 'fr-command fr-btn bb-color-btn', title: 'Default text colour',
+				'aria-haspopup': 'dialog', 'aria-expanded': 'false',
+			}, make('img', { src: PAINT_ICON, alt: '', width: 20, height: 20 }), make('span', { class: 'fr-sr-only', text: 'Default text colour' }));
+			paint.addEventListener('mousedown', (ev) => ev.preventDefault());
+			paint.addEventListener('click', toggle(paint, openColor));
 
-			// Froala regroups its own buttons on resize: it leaves ours behind or hides it.
-			// Put it back straight away so it never flickers out.
-			const keep = new MutationObserver(() => placeButton(toolbar, btn));
+			placeButton(toolbar, btn, paint);
+			showColor(store.get().color);
+
+			// Froala regroups its own buttons on resize: it leaves ours behind or hides them.
+			// Put them back straight away so they never flicker out.
+			const keep = new MutationObserver(() => placeButton(toolbar, btn, paint));
 			keep.observe(toolbar, { childList: true, subtree: true });
 			keep.observe(btn, { attributes: true, attributeFilter: ['class'] });
+			keep.observe(paint, { attributes: true, attributeFilter: ['class'] });
 		}
 
 		function addStyles() {
@@ -687,7 +887,20 @@
 			const s = document.createElement('style');
 			s.id = 'bb-emoji-style';
 			s.textContent = `
-				.bb-emoji-btn img { display: block; margin: auto; width: 20px; height: 20px; object-fit: contain; }
+				.bb-emoji-btn img, .bb-color-btn img { display: block; margin: auto; width: 20px; height: 20px; object-fit: contain; }
+				.bb-color-btn img { image-rendering: pixelated; }
+				.bb-color-menu .menu-header { margin: 0; }
+				.bb-color-menu .bb-color { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; }
+				.bb-color-menu .bb-color p { margin: 0; font-size: 12px; }
+				.bb-color-menu .bb-color-pick { display: flex; gap: 8px; align-items: center; }
+				.bb-color-menu .bb-color-picker { width: 40px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; }
+				.bb-color-menu .bb-color-hex { flex: 1; font-family: monospace; }
+				.bb-color-menu .bb-color-error, .bb-color-menu .bb-color-warn { font-size: 12px; color: #e5484d; }
+				.bb-color-menu .bb-color-error:empty, .bb-color-menu .bb-color-warn:empty { display: none; }
+				.bb-color-menu .bb-color-preview { border-radius: 4px; padding: 8px 10px; font-size: 13px; line-height: 1.4; border: 1px solid rgba(127, 127, 127, .35); }
+				.bb-color-menu .bb-color-style { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+				.bb-color-menu .bb-color-time { font-size: 11px; }
+				.bb-color-menu .bb-color-actions { display: flex; gap: 8px; }
 				.menu.bb-emoji-menu {
 					position: fixed; display: block; width: 340px; max-width: calc(100vw - 16px);
 					margin: 0; z-index: 1000;

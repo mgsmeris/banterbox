@@ -6,6 +6,7 @@
  *   { asked: boolean,                        has the user answered the consent prompt?
  *     remote: boolean,                       load the sb.smeris.me list?
  *     updates: boolean,                      check sb.smeris.me for new versions?
+ *     color: '' | '#rrggbb',                 default colour for shoutbox messages
  *     custom: [{ name, url, w, h }] }        the user's own emojis
  *
  * Nothing is requested from sb.smeris.me until asked is true. remote and
@@ -18,6 +19,7 @@
 	const KEY = 'settings';
 	const MAX_CUSTOM = 200;
 	const NAME_RE = /^[a-z0-9_]{2,32}$/;
+	const COLOR_RE = /^#[0-9a-f]{6}$/;
 
 	/**
 	 * A user-supplied image link we're willing to store and post: https only, no
@@ -45,7 +47,8 @@
 			seen.add(e.name);
 			custom.push({ name: e.name, url: e.url, w, h });
 		}
-		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, custom };
+		const color = typeof s.color === 'string' && COLOR_RE.test(s.color.toLowerCase()) ? s.color.toLowerCase() : '';
+		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, color, custom };
 	}
 
 	async function read() {
@@ -68,5 +71,5 @@
 	/** What the user actually allowed: nothing until they've answered. */
 	const allows = (s, what) => s.asked && s[what];
 
-	globalThis.BanterBoxSettings = Object.freeze({ MAX_CUSTOM, NAME_RE, safeUrl, sanitize, allows, read, write, onChange });
+	globalThis.BanterBoxSettings = Object.freeze({ MAX_CUSTOM, NAME_RE, COLOR_RE, safeUrl, sanitize, allows, read, write, onChange });
 })();

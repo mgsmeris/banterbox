@@ -8,8 +8,9 @@
  *   bridge -> page     "banterbox:settings" (JSON)    current settings
  *
  * Settings are otherwise only changed in the extension popup. The one exception
- * is the consent prompt in the emoji menu: its Save button is handled here, and
- * only for real clicks (isTrusted), so a script on perpheads can't answer it.
+ * are the consent prompt in the emoji menu and the default colour menu: their
+ * buttons are handled here, and only for real clicks (isTrusted), so a script on
+ * perpheads can't answer the prompt or change the colour.
  */
 (() => {
 	'use strict';
@@ -33,6 +34,22 @@
 		};
 		const answer = { asked: true, remote: ticked('remote'), updates: ticked('updates') };
 		S.read().then((s) => S.write({ ...s, ...answer }));
+	}, true);
+
+	document.addEventListener('click', (ev) => {
+		if (!ev.isTrusted || !(ev.target instanceof Element)) return;
+		const btn = ev.target.closest('button[data-bb-color]');
+		const box = btn && btn.closest('.bb-color');
+		if (!box) return;
+		let color = '';
+		if (btn.dataset.bbColor === 'save') {
+			const input = box.querySelector('input[data-bb-color="value"]');
+			color = input ? input.value.trim().toLowerCase() : '';
+			if (color && !S.COLOR_RE.test(color)) return;
+		} else if (btn.dataset.bbColor !== 'clear') {
+			return;
+		}
+		S.read().then((s) => S.write({ ...s, color }));
 	}, true);
 	S.onChange(send); // changed in the popup: update open perpheads tabs right away
 	sendCurrent();
