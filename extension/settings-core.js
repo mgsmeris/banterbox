@@ -5,7 +5,7 @@
  *
  *   { asked: boolean,                        has the user answered the consent prompt?
  *     remote: boolean,                       load the sb.smeris.me list?
- *     updates: boolean,                      check sb.smeris.me for new versions?
+ *     updates: boolean,                      check GitHub for new versions?
  *     color: '' | '#rrggbb',                 default colour for shoutbox messages
  *     custom: [{ name, url, w, h }] }        the user's own emojis
  *

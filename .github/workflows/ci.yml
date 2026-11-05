@@ -73,7 +73,7 @@ jobs:
           unzip -q dist/*-firefox.xpi -d /tmp/ff
           npx --yes web-ext sign --channel=unlisted --source-dir /tmp/ff             --artifacts-dir /tmp/signed --api-key "$key" --api-secret "$secret"
           mv /tmp/signed/*.xpi dist/banterbox-firefox-signed.xpi
-          # Firefox checks https://sb.smeris.me/update.json (update_url in the manifest).
+          # Firefox reads this file from raw.githubusercontent.com (update_url in the manifest).
           cat > server/public/update.json <<JSON
           {
             "addons": {

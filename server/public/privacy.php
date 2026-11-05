@@ -33,13 +33,13 @@ View::head('Privacy policy · BanterBox');
 	<h2>On Perpheads</h2>
 	<p>The extension only runs on perpheads.com. It adds the emoji menu to the shoutbox and fixes some shoutbox bugs. It does not read, store or send your messages or account details. What you post goes only to Perpheads, as it would without the extension.</p>
 
-	<h2>Requests to sb.smeris.me</h2>
+	<h2>Requests to sb.smeris.me and GitHub</h2>
 	<p>The first time you open the emoji menu, BanterBox asks whether it may:</p>
 	<ul>
 		<li>load the BanterBox emoji list and its images from sb.smeris.me, and</li>
-		<li>check sb.smeris.me twice a day for a new version.</li>
+		<li>check GitHub (raw.githubusercontent.com) twice a day for a new version.</li>
 	</ul>
-	<p>Until you answer, it makes no requests to sb.smeris.me. You can change both later in the extension's menu.</p>
+	<p>Until you answer, it makes neither request. You can change both later in the extension's menu. Firefox itself also checks GitHub for updates of the add-on, as it does for every add-on.</p>
 	<p>These requests carry no cookies or identifiers. Your IP address is used by the web server only to answer the request, as any website needs to. It is not stored or used for anything else.</p>
 
 	<h2>Other sites</h2>

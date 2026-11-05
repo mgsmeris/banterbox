@@ -82,8 +82,9 @@ code. The admin tool's *System* page shows OK for "config.php is outside the cod
 folder" and "Data folder is outside the code folder" when it's set up right.
 
 To update, upload the changed files from `server/` (never `tests/`) over
-`sb.smeris.me/`. After a new extension version, that includes
-`public/update.json`, which GitHub commits for you when it signs the Firefox build.
+`sb.smeris.me/`. New extension versions need no upload: Firefox reads
+`update.json` straight from GitHub. (The copy on the site only serves installs
+older than 1.1.1.)
 
 **What keeps secrets out of git** (each one alone is enough):
 
@@ -108,7 +109,7 @@ GitHub Release `v<version>` (version from `extension/manifest.json`). The same
 version again replaces the files; a new version makes a new release. The Firefox
 add-on is self-hosted (unlisted): with the AMO keys below, each new version is
 signed once, `banterbox-firefox-signed.xpi` goes on the release and CI commits
-`server/public/update.json`, which Firefox reads from https://sb.smeris.me/update.json,
+`server/public/update.json`, which Firefox reads straight from GitHub (raw.githubusercontent.com),
 so installed copies update themselves. If
 you add the repository secrets `AMO_JWT_ISSUER` and `AMO_JWT_SECRET` (an API key
 from addons.mozilla.org → Developer Hub → *Manage API Keys*), it also attaches a

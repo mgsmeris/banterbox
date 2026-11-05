@@ -1,4 +1,4 @@
-// BanterBox update checker (background). Reads https://sb.smeris.me/update.json,
+// BanterBox update checker (background). Reads update.json from GitHub,
 // the same file Firefox uses for automatic updates. If a newer version is out and
 // still isn't installed after a while (automatic updates off, or an unpacked
 // Chrome install), it puts a badge on the toolbar icon; the popup says what's new.
@@ -7,7 +7,7 @@
 // the popup), and nothing once they switch it off.
 'use strict';
 
-const UPDATE_URL = 'https://sb.smeris.me/update.json';
+const UPDATE_URL = 'https://raw.githubusercontent.com/mgsmeris/banterbox/main/server/public/update.json';
 const ADDON_ID = 'banterbox@smeris.me';
 const CHECK_MINUTES = 12 * 60;
 // Firefox with automatic updates on installs a new version within about a day;

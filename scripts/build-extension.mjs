@@ -57,8 +57,9 @@ function firefoxManifest() {
 		gecko: {
 			...(manifest.browser_specific_settings?.gecko || {}),
 			// Self-hosted (unlisted) add-on: Firefox checks this file for new versions.
-			// CI writes it to server/public/update.json after signing each new version.
-			update_url: 'https://sb.smeris.me/update.json',
+			// CI commits it to server/public/update.json after signing each new version,
+			// and Firefox reads it straight from GitHub.
+			update_url: 'https://raw.githubusercontent.com/mgsmeris/banterbox/main/server/public/update.json',
 			// Required by addons.mozilla.org for new add-ons: BanterBox collects nothing.
 			data_collection_permissions: { required: ['none'] },
 		},

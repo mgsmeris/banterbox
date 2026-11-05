@@ -536,7 +536,7 @@
 					make('input', { type: 'checkbox', checked: true, dataset: { bbConsent: name } }), ' ' + text);
 				const save = make('button', { type: 'button', class: 'button button--primary bb-consent-save', text: 'Save', dataset: { bbConsent: 'save' } });
 				body.append(make('div', { class: 'menu-row bb-consent' },
-					make('p', { text: 'BanterBox can load its emoji list from sb.smeris.me and check there for new versions. No personal data is collected. ' },
+					make('p', { text: 'BanterBox can load its emoji list from sb.smeris.me and check GitHub for new versions. No personal data is collected. ' },
 						make('a', { href: source + 'privacy', target: '_blank', rel: 'noopener noreferrer', text: 'Privacy policy' })),
 					box('remote', 'Load the BanterBox emojis'),
 					box('updates', 'Tell me when a new version is out'),

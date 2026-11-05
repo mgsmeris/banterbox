@@ -19,14 +19,6 @@ $emojis = Emojis::all();
 const RELEASES = 'https://github.com/mgsmeris/banterbox/releases';
 $chrome = RELEASES . '/latest/download/banterbox-chrome.zip';
 $firefox = RELEASES . '/latest/download/banterbox-firefox-signed.xpi';
-// Newest signed Firefox version, from the update file CI writes.
-$version = '';
-$update = @file_get_contents(App::publicDir() . '/update.json');
-$list = is_string($update) ? (json_decode($update, true)['addons']['banterbox@smeris.me']['updates'] ?? null) : null;
-if (is_array($list) && $list) {
-	$v = (string) (end($list)['version'] ?? '');
-	$version = preg_match('/^\d{1,5}(\.\d{1,5}){0,3}$/', $v) ? $v : '';
-}
 
 // Screenshots are shown only once their files are in public/assets/.
 $shots = array_filter([
@@ -99,10 +91,10 @@ View::head('BanterBox: a better Perpheads shoutbox');
 			<article class="card browser">
 				<h3>Firefox</h3>
 				<a class="btn btn-primary btn-add" href="<?= View::e($firefox) ?>" rel="noopener">Add to Firefox</a>
-				<p class="signed"><span class="check" aria-hidden="true">✓</span> Signed by Mozilla<?= $version !== '' ? ' · version ' . View::e($version) : '' ?></p>
+				<p class="signed"><span class="check" aria-hidden="true">✓</span> Signed by Mozilla · updates itself</p>
 				<ol>
 					<li>Firefox asks for permission: click <em>Continue to installation</em>.</li>
-					<li>Click <em>Add</em>. BanterBox then updates itself.</li>
+					<li>Click <em>Add</em>.</li>
 				</ol>
 			</article>
 			<article class="card browser">
