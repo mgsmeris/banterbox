@@ -230,6 +230,9 @@ input:invalid:not(:placeholder-shown):not(:focus) { border-color: var(--danger);
 .audit th { color: var(--muted); font-weight: 600; }
 
 .site-footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 2rem 1rem; }
+.site-footer a { color: inherit; }
+.prose { max-width: 720px; padding-block: 2rem; line-height: 1.6; }
+.prose h2 { margin-top: 2rem; }
 
 @media (max-width: 700px) {
 	.hero-inner { flex-direction: column; text-align: center; }

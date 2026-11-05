@@ -26,7 +26,8 @@ function probeImage(url, timeout = 8000) {
 let settings = S.sanitize(null);
 
 function render() {
-	$('remote').checked = settings.remote;
+	$('remote').checked = S.allows(settings, 'remote');
+	$('updateCheck').checked = S.allows(settings, 'updates');
 	$('count').textContent = '(' + settings.custom.length + '/' + S.MAX_CUSTOM + ')';
 	const list = $('own');
 	list.replaceChildren();
@@ -54,10 +55,14 @@ function render() {
 	}
 }
 
-$('remote').addEventListener('change', async () => {
-	settings = await S.write({ ...settings, remote: $('remote').checked });
-	render();
-});
+// Changing either switch here counts as the user's answer, for both.
+for (const id of ['remote', 'updateCheck']) {
+	$(id).addEventListener('change', async () => {
+		settings = await S.write({ ...settings, asked: true, remote: $('remote').checked, updates: $('updateCheck').checked });
+		render();
+		renderUpdate();
+	});
+}
 
 $('add').addEventListener('submit', async (ev) => {
 	ev.preventDefault();
@@ -93,6 +98,7 @@ $('add').addEventListener('submit', async (ev) => {
 S.onChange((next) => {
 	settings = next;
 	render();
+	renderUpdate();
 });
 
 // ------------------------------------------------------------ updates
@@ -110,9 +116,8 @@ function isNewer(a, b) {
 }
 
 async function renderUpdate() {
-	const { update, updateCheck } = await chrome.storage.local.get(['update', 'updateCheck']);
-	const on = updateCheck !== false;
-	$('updateCheck').checked = on;
+	const { update } = await chrome.storage.local.get('update');
+	const on = S.allows(settings, 'updates');
 	const latest = update && typeof update.latest === 'string' && /^\d{1,5}(\.\d{1,5}){0,3}$/.test(update.latest) ? update.latest : '';
 	const show = on && latest && isNewer(latest, installed);
 	const link = $('update');
@@ -120,16 +125,11 @@ async function renderUpdate() {
 	if (show) link.textContent = 'BanterBox ' + latest + ' is out. Get the update →';
 }
 
-$('updateCheck').addEventListener('change', async () => {
-	await chrome.storage.local.set({ updateCheck: $('updateCheck').checked });
-	renderUpdate();
-});
 chrome.storage.onChanged.addListener((changes, area) => {
-	if (area === 'local' && ('update' in changes || 'updateCheck' in changes)) renderUpdate();
+	if (area === 'local' && 'update' in changes) renderUpdate();
 });
-renderUpdate();
-
 S.read().then((s) => {
 	settings = s;
 	render();
+	renderUpdate();
 });

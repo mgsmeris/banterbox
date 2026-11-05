@@ -7,8 +7,9 @@
  *   page   -> bridge   "banterbox:request"            send me the settings
  *   bridge -> page     "banterbox:settings" (JSON)    current settings
  *
- * It's read-only on purpose: settings are only changed in the extension popup,
- * so nothing running on perpheads can change them.
+ * Settings are otherwise only changed in the extension popup. The one exception
+ * is the consent prompt in the emoji menu: its Save button is handled here, and
+ * only for real clicks (isTrusted), so a script on perpheads can't answer it.
  */
 (() => {
 	'use strict';
@@ -20,6 +21,19 @@
 	const sendCurrent = () => S.read().then(send, () => send(S.sanitize(null)));
 
 	document.addEventListener('banterbox:request', sendCurrent);
+
+	document.addEventListener('click', (ev) => {
+		if (!ev.isTrusted || !(ev.target instanceof Element)) return;
+		const save = ev.target.closest('[data-bb-consent="save"]');
+		const box = save && save.closest('.bb-consent');
+		if (!box) return;
+		const ticked = (name) => {
+			const input = box.querySelector('input[data-bb-consent="' + name + '"]');
+			return !!(input && input.checked);
+		};
+		const answer = { asked: true, remote: ticked('remote'), updates: ticked('updates') };
+		S.read().then((s) => S.write({ ...s, ...answer }));
+	}, true);
 	S.onChange(send); // changed in the popup: update open perpheads tabs right away
 	sendCurrent();
 })();

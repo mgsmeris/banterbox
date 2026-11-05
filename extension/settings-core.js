@@ -3,8 +3,13 @@
  * popup and the storage bridge (both run in the extension's own context, never
  * in the page).
  *
- *   { remote: boolean,                       load the sb.smeris.me list?
+ *   { asked: boolean,                        has the user answered the consent prompt?
+ *     remote: boolean,                       load the sb.smeris.me list?
+ *     updates: boolean,                      check sb.smeris.me for new versions?
  *     custom: [{ name, url, w, h }] }        the user's own emojis
+ *
+ * Nothing is requested from sb.smeris.me until asked is true. remote and
+ * updates default to true, so the consent prompt starts with both ticked.
  */
 (() => {
 	'use strict';
@@ -40,7 +45,7 @@
 			seen.add(e.name);
 			custom.push({ name: e.name, url: e.url, w, h });
 		}
-		return { remote: s.remote !== false, custom };
+		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, custom };
 	}
 
 	async function read() {
@@ -60,5 +65,8 @@
 		});
 	}
 
-	globalThis.BanterBoxSettings = Object.freeze({ MAX_CUSTOM, NAME_RE, safeUrl, sanitize, read, write, onChange });
+	/** What the user actually allowed: nothing until they've answered. */
+	const allows = (s, what) => s.asked && s[what];
+
+	globalThis.BanterBoxSettings = Object.freeze({ MAX_CUSTOM, NAME_RE, safeUrl, sanitize, allows, read, write, onChange });
 })();

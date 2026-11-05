@@ -231,13 +231,15 @@
 			seen.add(e.name);
 			custom.push({ name: e.name, url: e.url, w, h });
 		}
-		return { remote: s.remote !== false, custom };
+		return { asked: s.asked === true, remote: s.remote !== false, updates: s.updates !== false, custom };
 	}
 
 	/**
-	 * User settings: { remote: bool, custom: [{name, url, w, h}] }, edited in the
-	 * extension popup and handed over by storage-bridge.js. Read-only here. If the
-	 * bridge doesn't answer (e.g. the script was injected by hand), the defaults apply.
+	 * User settings: { asked, remote, updates, custom: [{name, url, w, h}] }, edited
+	 * in the extension popup and handed over by storage-bridge.js. Read-only here:
+	 * the consent prompt's Save button is handled by the bridge. If the bridge
+	 * doesn't answer (e.g. the script was injected by hand), the defaults apply,
+	 * and those make no requests (asked is false).
 	 */
 	function createSettingsStore() {
 		let settings = sanitizeSettings(null);
@@ -279,6 +281,8 @@
 		let loading = null;
 		let menu = null;
 		let savedFor = null;    // editor whose selection we saved
+		// The sb.smeris.me list only once the user has agreed to it.
+		const useRemote = () => store.get().asked && store.get().remote;
 
 		// ------------------------------------------------------- list
 
@@ -320,7 +324,7 @@
 		/** The BanterBox list. With the setting off this never touches the network. */
 		async function load() {
 			await store.ready();
-			if (!store.get().remote) {
+			if (!useRemote()) {
 				forgetRemote();
 				return [];
 			}
@@ -339,7 +343,7 @@
 				.then((data) => {
 					const list = validate(data);
 					if (!list) throw new Error('bad emoji list');
-					if (!store.get().remote) return []; // switched off while loading
+					if (!useRemote()) return []; // switched off while loading
 					emojis = list;
 					loadFailed = false;
 					try {
@@ -423,6 +427,7 @@
 				if (k === 'class') el.className = v;
 				else if (k === 'text') el.textContent = v;
 				else if (k.startsWith('aria-') || k === 'role') el.setAttribute(k, v);
+				else if (k === 'dataset') Object.assign(el.dataset, v);
 				else el[k] = v;
 			}
 			el.append(...children);
@@ -488,14 +493,16 @@
 			const renderFoot = () => {
 				const links = foot.querySelectorAll('a');
 				links.forEach((a) => a.remove());
-				if (store.get().remote) {
+				if (useRemote()) {
 					foot.append(make('a', { href: source, target: '_blank', rel: 'noopener noreferrer', text: 'BanterBox emojis' }));
 				}
 			};
 
 			const renderEmojis = () => {
 				body.replaceChildren();
-				const { remote, custom } = store.get();
+				const { custom } = store.get();
+				const remote = useRemote();
+				if (!store.get().asked && !search.value.trim()) consent();
 				const remoteList = remote ? (emojis || []) : [];
 				const all = [...custom, ...remoteList];
 				const q = search.value.trim().toLowerCase().replace(/:/g, '');
@@ -513,9 +520,25 @@
 					else if (loadFailed) message('Could not load BanterBox emojis. Try again later.');
 					else message('Loading BanterBox emojis…');
 				}
-				if (!all.length && (!remote || emojis)) {
+				if (!all.length && store.get().asked && (!remote || emojis)) {
 					message(remote ? 'No emojis yet.' : 'No emojis yet. Add your own in the BanterBox extension menu.');
 				}
+			};
+
+			// Asked once, before anything is requested from sb.smeris.me. Both boxes start
+			// ticked. Saving is handled by storage-bridge.js (real clicks only); the new
+			// settings then come back through the store and the menu redraws.
+			const consent = () => {
+				const box = (name, text) => make('label', { class: 'bb-consent-opt' },
+					make('input', { type: 'checkbox', checked: true, dataset: { bbConsent: name } }), ' ' + text);
+				const save = make('button', { type: 'button', class: 'button button--primary bb-consent-save', text: 'Save', dataset: { bbConsent: 'save' } });
+				body.append(make('div', { class: 'menu-row bb-consent' },
+					make('p', { text: 'BanterBox can load its emoji list from sb.smeris.me and check there for new versions. No personal data is collected. ' },
+						make('a', { href: source + 'privacy', target: '_blank', rel: 'noopener noreferrer', text: 'Privacy policy' })),
+					box('remote', 'Load the BanterBox emojis'),
+					box('updates', 'Tell me when a new version is out'),
+					save,
+					make('p', { class: 'u-muted', text: 'You can change this later in the BanterBox extension menu.' })));
 			};
 
 			const render = () => {
@@ -567,10 +590,11 @@
 
 		// Settings changed in the extension popup: apply them to an open menu right away.
 		store.onChange((next) => {
-			if (!next.remote) forgetRemote();
+			const remote = next.asked && next.remote;
+			if (!remote) forgetRemote();
 			if (!menu) return;
 			menu.rerender();
-			if (next.remote) load().then(() => menu && menu.rerender(), () => menu && menu.rerender());
+			if (remote) load().then(() => menu && menu.rerender(), () => menu && menu.rerender());
 		});
 
 		// ---------------------------------------------------- toolbar
@@ -682,6 +706,10 @@
 				.bb-emoji-menu .bb-emoji-foot { display: flex; justify-content: space-between; gap: 8px; min-height: 18px; }
 				.bb-emoji-menu .bb-emoji-hover { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 				.bb-emoji-menu .bb-emoji-foot a { white-space: nowrap; }
+				.bb-emoji-menu .bb-consent { display: flex; flex-direction: column; gap: 6px; padding: 10px 4px; }
+				.bb-emoji-menu .bb-consent p { margin: 0; }
+				.bb-emoji-menu .bb-consent-opt { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+				.bb-emoji-menu .bb-consent-save { align-self: flex-start; }
 			`;
 			document.head.append(s);
 		}
