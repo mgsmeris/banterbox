@@ -1,15 +1,11 @@
-name: Build and deploy
+name: Build browser packages
 
-# Every push to main:
-#   1. builds the Chrome .zip and Firefox .xpi and puts them on the GitHub Release
-#      v<version_name or version> (from extension/manifest.json). Same version again just
-#      replaces the files; a new version makes a new release.
-#   2. updates the "deploy" branch with the server code (server/ without tests),
-#      which the web host pulls from.
+# Every push to main builds the Chrome .zip and Firefox .xpi and puts them on the
+# GitHub Release v<version_name or version> (from extension/manifest.json). Same
+# version again just replaces the files; a new version makes a new release.
 # Other branches and pull requests only build.
 on:
   push:
-    branches-ignore: [deploy]
   pull_request:
   workflow_dispatch:
 
@@ -125,40 +121,3 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-  deploy:
-    name: Update the deploy branch (server only)
-    needs: [secrets, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main # includes update.json if the build job just committed it
-          fetch-depth: 0
-      - name: Copy server/ (without tests) onto the deploy branch
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if git ls-remote --exit-code --heads origin deploy >/dev/null; then
-            git fetch origin deploy
-            git worktree add -B deploy /tmp/deploy origin/deploy
-          else
-            git worktree add --orphan -b deploy /tmp/deploy
-          fi
-
-          rsync -a --delete --exclude '.git' --exclude 'tests/' server/ /tmp/deploy/
-
-          cd /tmp/deploy
-          git add -A
-          # Same guard as everywhere else, on exactly what is about to be deployed.
-          bash "$GITHUB_WORKSPACE/scripts/check-secrets.sh"
-          if git diff --cached --quiet; then
-            echo "Server code unchanged, nothing to deploy."
-            exit 0
-          fi
-          git commit -m "Deploy ${GITHUB_SHA::7}: $(git -C "$GITHUB_WORKSPACE" log -1 --format=%s)"
-          git push origin deploy

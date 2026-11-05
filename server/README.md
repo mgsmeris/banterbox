@@ -29,8 +29,6 @@ without it animated emojis are refused). Apache needs **mod_rewrite** and
 `AllowOverride All` (or at least `FileInfo Options Indexes AuthConfig`), so the
 `.htaccess` files work. HTTPS is required.
 
-(Deploying from GitHub instead? See [Deploying from GitHub](#deploying-from-github-automatic-deploys).)
-
 **Upload everything except `tests/`.** Then pick one layout:
 
 - **Layout A (best): the subdomain's document root is `public/`.** Upload the
@@ -49,7 +47,7 @@ The app refuses to start if `data/` is.
 Then:
 
 1. Copy `config.example.php` to `banterbox-private/config.php`, in the folder
-   above the site (see the layout under *Deploying from GitHub*). Check `base_url`
+   above the site (see the layout under *Updating the site*). Check `base_url`
    (`https://sb.smeris.me`), and set
    `setup_token` to a long random string (32+ characters, e.g. from a password
    manager).
@@ -63,45 +61,29 @@ Then:
 5. From your PC, run the deploy check (see below). It confirms the `.htaccess`
    rules really block `src/`, `config.php` and `data/`.
 
-## Deploying from GitHub (automatic deploys)
+## Updating the site
 
-Settings and data must live **outside** the folder git deploys into. Then no
-deploy can overwrite or delete them, however the host does it (pull, reset or a
-fresh clone), and they're never part of the repository.
+Keep your settings and data **outside** the code folder, so uploading new code can
+never overwrite or delete them:
 
 ```
 /var/www/<id>/
-  banterbox-private/       <- yours, never in git, never touched by deploys
+  banterbox-private/       <- yours, never in git, never overwritten by an upload
     config.php
     data/                  <- database, emojis, sessions, logs
-  sb.smeris.me/            <- the "deploy" branch is checked out here
-    public/                <- the document root of sb.smeris.me (as now)
+  sb.smeris.me/            <- the code: server/ without tests/
+    public/                <- the document root of sb.smeris.me
     src/
 ```
 
-**Use the `deploy` branch, not `main`.** After every push to `main`, the *CI and
-deploy* workflow runs the secret scan and all tests. If everything passes, it copies
-`server/` (without `tests/`) onto the `deploy` branch. That branch holds only the
-server code, laid out exactly like your current `sb.smeris.me/` folder, so the
-document root stays `public/`. Nothing else in the repository (extension, tests,
-docs) ever reaches the web server, and a commit that fails the tests is never
-deployed. (A tag wouldn't work for this: tags don't move, so the panel wouldn't
-pick up new code.)
+The app finds `banterbox-private/` by itself: it looks next to the code folder and
+one level above it, and only accepts files owned by the same system user as the
+code. The admin tool's *System* page shows OK for "config.php is outside the code
+folder" and "Data folder is outside the code folder" when it's set up right.
 
-**Before you connect GitHub** (your current files are inside the site folder):
-
-1. Back up `sb.smeris.me/config.php` and `sb.smeris.me/data/` (download them).
-2. Create `/var/www/<id>/banterbox-private/` and move `config.php` and the whole
-   `data/` folder into it. If your `config.php` has a `data_dir` line, delete it
-   (the default is the `data/` next to `config.php`).
-3. Open the admin tool's *System* page: "config.php is outside the code folder"
-   and "Data folder is outside the code folder" should both say OK.
-
-**Then** push to GitHub once (so the workflow creates the `deploy` branch) and
-connect the hosting panel's git integration to the **`deploy`** branch, deploying
-into `sb.smeris.me/`. The app finds `banterbox-private/` by itself: it looks next
-to the code folder and one level above it, and only accepts files owned by the
-same system user as the code.
+To update, upload the changed files from `server/` (never `tests/`) over
+`sb.smeris.me/`. After a new extension version, that includes
+`public/update.json`, which GitHub commits for you when it signs the Firefox build.
 
 **What keeps secrets out of git** (each one alone is enough):
 
@@ -112,9 +94,8 @@ same system user as the code.
   refuses anything that looks like a secret: a filled-in `setup_token`, password
   hashes, authenticator secrets, private keys, GitHub or AWS tokens. It's switched
   on per clone, once: `git config core.hooksPath .githooks`
-- The *CI and deploy* workflow runs the same check on every push (which also covers
-  commits made in GitHub's web editor), and again on the exact files it's about
-  to put on the `deploy` branch.
+- The *Build browser packages* workflow runs the same check on every push (which
+  also covers commits made in GitHub's web editor).
 - On GitHub, turn on *Settings → Code security → Secret scanning* and *Push
   protection* too. Then GitHub itself rejects pushes with known token formats.
 
