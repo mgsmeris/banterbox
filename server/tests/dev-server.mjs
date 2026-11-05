@@ -48,7 +48,8 @@ function route(p) {
 	if (p === '/sb/' || p === '/sb/index.php') return { script: 'index.php' };
 	if (p === '/sb/admin/' || p === '/sb/admin/index.php') return { script: 'admin/index.php' };
 	if (p === '/sb/emojis.json') return { script: 'emojis.php' };
-	// Apache also serves these two directly (the .htaccess allows them by name).
+	if (p === '/sb/privacy' || p === '/sb/privacy.php') return { script: 'privacy.php' };
+	// Apache also serves these directly (the .htaccess allows them by name).
 	if (p === '/sb/e.php' || p === '/sb/emojis.php') return { script: p.slice(4) };
 	let m = p.match(/^\/sb\/e\/([a-f0-9]{32})\.(png|gif|webp)$/);
 	if (m) return { script: 'e.php', query: `id=${m[1]}&ext=${m[2]}` };
