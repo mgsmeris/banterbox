@@ -66,9 +66,16 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
+          # Pasted secrets often carry a stray space or newline; AMO then rejects them.
+          key=$(printf %s "$AMO_JWT_ISSUER" | tr -d '[:space:]')
+          secret=$(printf %s "$AMO_JWT_SECRET" | tr -d '[:space:]')
+          if ! [[ "$key" =~ ^user:[0-9]+:[0-9]+$ ]]; then
+            echo "::error::AMO_JWT_ISSUER should look like user:12345678:123 (the 'JWT issuer' from addons.mozilla.org/developers/addon/api/key/). Check the secret, it may be swapped with AMO_JWT_SECRET."
+            exit 1
+          fi
           mkdir -p /tmp/ff /tmp/signed
           unzip -q dist/*-firefox.xpi -d /tmp/ff
-          npx --yes web-ext sign --channel=unlisted --source-dir /tmp/ff             --artifacts-dir /tmp/signed --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET"
+          npx --yes web-ext sign --channel=unlisted --source-dir /tmp/ff             --artifacts-dir /tmp/signed --api-key "$key" --api-secret "$secret"
           mv /tmp/signed/*.xpi dist/banterbox-firefox-signed.xpi
           # Firefox checks https://sb.smeris.me/update.json (update_url in the manifest).
           cat > server/public/update.json <<JSON
