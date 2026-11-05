@@ -9,7 +9,7 @@ DirectoryIndex index.php
 <FilesMatch "\.(php|phtml|phar|php\d|pht|phps)$">
 	Require all denied
 </FilesMatch>
-<FilesMatch "^(index|e|emojis)\.php$">
+<FilesMatch "^(index|e|emojis|privacy)\.php$">
 	Require all granted
 </FilesMatch>
 
@@ -21,6 +21,7 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	RewriteRule ^emojis\.json$ emojis.php [L]
+	RewriteRule ^privacy$ privacy.php [L]
 	RewriteRule ^e/([a-f0-9]{32})\.(png|gif|webp)$ e.php?id=$1&ext=$2 [L]
 </IfModule>
 

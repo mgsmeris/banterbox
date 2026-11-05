@@ -3,7 +3,8 @@
 // still isn't installed after a while (automatic updates off, or an unpacked
 // Chrome install), it puts a badge on the toolbar icon; the popup says what's new.
 //
-// Can be switched off in the popup ("updateCheck" = false); then it fetches nothing.
+// Fetches nothing until the user has agreed (consent prompt in the emoji menu or
+// the popup), and nothing once they switch it off.
 'use strict';
 
 const UPDATE_URL = 'https://sb.smeris.me/update.json';
@@ -25,8 +26,8 @@ function newer(a, b) {
 }
 
 async function enabled() {
-	const { updateCheck } = await chrome.storage.local.get('updateCheck');
-	return updateCheck !== false;
+	const { settings } = await chrome.storage.local.get('settings');
+	return !!settings && settings.asked === true && settings.updates !== false;
 }
 
 async function showBadge() {
@@ -76,5 +77,5 @@ chrome.runtime.onInstalled.addListener(start);
 chrome.runtime.onStartup.addListener(start);
 chrome.alarms.onAlarm.addListener((a) => { if (a.name === 'update-check') check(); });
 chrome.storage.onChanged.addListener((changes, area) => {
-	if (area === 'local' && 'updateCheck' in changes) check();
+	if (area === 'local' && 'settings' in changes) check();
 });
