@@ -105,7 +105,14 @@ case "$state" in
 		;;
 esac
 
-pub=$(call -X POST -H 'Content-Type: application/json' \
-	-d '{"publishType":"DEFAULT_PUBLISH"}' "$API/v2/$NAME:publish")
+# No body: by default the item is published as soon as the review passes.
+pub=$(curl -sS -w '\n%{http_code}' -X POST -H "Authorization: Bearer $token" -H 'Content-Length: 0' "$API/v2/$NAME:publish")
+code=${pub##*$'\n'}
+pub=${pub%$'\n'*}
+if [ "$code" != 200 ]; then
+	echo "::error::The Chrome Web Store did not accept the submission (HTTP $code); Google's answer is below. $VERSION is uploaded as a draft: fix what Google says and re-run this job, or press 'Submit for review' in the Developer Dashboard."
+	echo "$pub"
+	exit 1
+fi
 echo "$pub" | jq '{state, warnings: .warningInfo.warnings}'
 echo "Submitted $VERSION for review; it goes live automatically once Google approves it."
