@@ -25,7 +25,12 @@ function newer(a, b) {
 	return false;
 }
 
+// Chrome adds update_url to the manifest of a Web Store install, and the store keeps
+// it up to date by itself. Only unpacked installs (no update_url) need telling.
+const STORE_INSTALL = typeof browser === 'undefined' && !!chrome.runtime.getManifest().update_url;
+
 async function enabled() {
+	if (STORE_INSTALL) return false;
 	const { settings } = await chrome.storage.local.get('settings');
 	return !!settings && settings.asked === true && settings.updates !== false;
 }

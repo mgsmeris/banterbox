@@ -3,6 +3,7 @@ name: Build browser packages
 # Every push to main builds the Chrome .zip and Firefox .xpi and puts them on the
 # GitHub Release v<version_name or version> (from extension/manifest.json). Same
 # version again just replaces the files; a new version makes a new release.
+# A new version is also signed by Mozilla and submitted to the Chrome Web Store.
 # Other branches and pull requests only build.
 on:
   push:
@@ -33,6 +34,9 @@ jobs:
     env:
       AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
       AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -108,6 +112,13 @@ jobs:
           else
             gh release create "$tag" "${files[@]}" --target "$GITHUB_SHA"               --title "BanterBox $tag" --generate-notes
           fi
+
+      - name: Submit to the Chrome Web Store (new versions only, if the CWS secrets are set)
+        if: >-
+          github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+          env.CWS_SERVICE_ACCOUNT_KEY != '' && env.CWS_PUBLISHER_ID != '' && env.CWS_EXTENSION_ID != ''
+        continue-on-error: true
+        run: bash scripts/chrome-web-store.sh
 
       - name: Commit server/public/update.json (only after a new version was signed)
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

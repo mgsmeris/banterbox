@@ -104,6 +104,9 @@ S.onChange((next) => {
 // ------------------------------------------------------------ updates
 
 const installed = chrome.runtime.getManifest().version;
+// Chrome Web Store installs update themselves (Chrome adds update_url to their manifest).
+const storeInstall = typeof browser === 'undefined' && !!chrome.runtime.getManifest().update_url;
+if (storeInstall) $('updates').hidden = true;
 $('version').textContent = 'You have version ' + (chrome.runtime.getManifest().version_name || installed) + '.';
 
 function isNewer(a, b) {
@@ -117,7 +120,7 @@ function isNewer(a, b) {
 
 async function renderUpdate() {
 	const { update } = await chrome.storage.local.get('update');
-	const on = S.allows(settings, 'updates');
+	const on = !storeInstall && S.allows(settings, 'updates');
 	const latest = update && typeof update.latest === 'string' && /^\d{1,5}(\.\d{1,5}){0,3}$/.test(update.latest) ? update.latest : '';
 	const show = on && latest && isNewer(latest, installed);
 	const link = $('update');
