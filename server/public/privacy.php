@@ -18,7 +18,7 @@ View::head('Privacy policy · BanterBox');
 <main class="wrap prose">
 	<p><a href="./">← BanterBox</a></p>
 	<h1>Privacy policy</h1>
-	<p class="muted">Last updated 5 November 2026</p>
+	<p class="muted">Last updated 10 November 2026</p>
 
 	<p>The BanterBox browser extension does not collect, store, sell or share personal data. It has no accounts, analytics, ads or tracking.</p>
 
@@ -31,7 +31,7 @@ View::head('Privacy policy · BanterBox');
 	<p>This never leaves your browser. Removing the extension removes it.</p>
 
 	<h2>On Perpheads</h2>
-	<p>The extension only runs on perpheads.com. It adds the emoji menu to the shoutbox and fixes some shoutbox bugs. It does not read, store or send your messages or account details. What you post goes only to Perpheads, as it would without the extension.</p>
+	<p>The extension only runs on perpheads.com. It adds the emoji menu, a default text colour and the avatars of who liked a message to the shoutbox, and fixes some shoutbox bugs. To show who liked a message it reads the forum's own like list from perpheads.com. If you pick a default colour, it adds that colour to the messages you send. It does not store or send your messages or account details anywhere else: what you post goes only to Perpheads, as it would without the extension.</p>
 
 	<h2>Requests to sb.smeris.me and GitHub</h2>
 	<p>The first time you open the emoji menu, BanterBox asks whether it may:</p>

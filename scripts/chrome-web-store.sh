@@ -74,6 +74,13 @@ if [ "$published" = "$VERSION" ] || [ "$submitted" = "$VERSION" ]; then
 	exit 0
 fi
 
+# The store only accepts a version higher than the one it has.
+newest=$(printf '%s\n' "$published" "$submitted" | sed '/^$/d' | sort -V | tail -1)
+if [ -n "$newest" ] && [ "$(printf '%s\n%s\n' "$newest" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]; then
+	echo "::error::The Chrome Web Store already has version $newest. Give extension/manifest.json a higher version than that (now $VERSION)."
+	exit 1
+fi
+
 # Only one submission can wait for review; the newest one wins.
 if [ "$submitted_state" = PENDING_REVIEW ] || [ "$submitted_state" = STAGED ]; then
 	echo "Replacing the waiting submission of $submitted with $VERSION."

@@ -983,6 +983,187 @@
 
 	// ----------------------------------------------------------------- boot
 
+	// ------------------------------------------------------- who liked
+
+	// Next to a message's green "+N" (Siropu's link to its "Message likes" overlay),
+	// shows the avatars of the people who liked it, and their names on hover. The
+	// list comes from that same overlay, read from perpheads itself: one request per
+	// liked message, again only when its like count changes.
+	function installLikers(XF, chat) {
+		const MAX_AVATARS = 6;
+		const LIKES_RE = /^\/chat\/message\/(\d+)\/likes$/;
+		const cache = new Map(); // message id -> { count, users: Promise<[{id, name, href, img, letter, bg, fg}]> }
+		let queue = Promise.resolve();
+		let pop = null;
+
+		const el = (tag, cls, text) => {
+			const e = document.createElement(tag);
+			if (cls) e.className = cls;
+			if (text !== undefined) e.textContent = text;
+			return e;
+		};
+
+		/** Only the bits we need from the overlay HTML, checked; everything else is ignored. */
+		function parseLikes(html) {
+			const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+			const users = [];
+			const seen = new Set();
+			for (const row of doc.querySelectorAll('.block-row')) {
+				const link = row.querySelector('a.username[data-user-id]');
+				const id = link && Number(link.dataset.userId);
+				if (!id || seen.has(id)) continue;
+				seen.add(id);
+				const href = link.getAttribute('href') || '';
+				const user = {
+					id,
+					name: link.textContent.trim().slice(0, 50),
+					href: /^\/members\/[^/?#]+\/$/.test(href) ? href : '',
+				};
+				const img = row.querySelector('.avatar img');
+				const src = img && img.getAttribute('src');
+				if (src && (/^\/data\/avatars\//.test(src) || /^https:\/\//.test(src))) {
+					user.img = src;
+				} else {
+					// Letter avatar: XenForo colours it with an inline style.
+					const box = row.querySelector('.avatar');
+					user.letter = (box ? box.textContent.trim() : user.name).slice(0, 1).toUpperCase();
+					const st = box ? box.getAttribute('style') || '' : '';
+					user.bg = (st.match(/background-color:\s*(#[0-9a-f]{3,6}|rgb\([\d,\s]+\))/i) || [])[1] || '';
+					user.fg = (st.match(/(?:^|;)\s*color:\s*(#[0-9a-f]{3,6}|rgb\([\d,\s]+\))/i) || [])[1] || '';
+				}
+				users.push(user);
+			}
+			return users;
+		}
+
+		// One request at a time, so a page full of liked messages doesn't hit the forum at once.
+		function fetchLikes(href) {
+			const run = () => new Promise((resolve) => {
+				XF.ajax('GET', href, {}, (data) => resolve(parseLikes(data && data.html && data.html.content)),
+					{ skipDefault: true, global: false, error: () => resolve(null) });
+			});
+			const p = queue.then(run, run);
+			queue = p.then(() => new Promise((r) => setTimeout(r, 150)));
+			return p;
+		}
+
+		function avatar(u) {
+			if (u.img) {
+				const img = el('img', 'bb-liker');
+				img.src = u.img;
+				img.alt = '';
+				img.loading = 'lazy';
+				img.width = img.height = 16;
+				return img;
+			}
+			const s = el('span', 'bb-liker bb-liker-letter', u.letter || '?');
+			if (u.bg) s.style.backgroundColor = u.bg;
+			if (u.fg) s.style.color = u.fg;
+			return s;
+		}
+
+		function hidePop() {
+			if (pop) {
+				pop.el.remove();
+				pop = null;
+			}
+		}
+
+		function showPop(anchor, users) {
+			hidePop();
+			const list = el('ul', 'bb-likers-list');
+			for (const u of users) {
+				const li = el('li');
+				li.append(avatar(u), el('span', null, u.name));
+				list.append(li);
+			}
+			const box = el('div', 'menu is-active bb-likers-pop');
+			const content = el('div', 'menu-content');
+			content.append(el('div', 'menu-header', 'Liked by'), list);
+			box.append(content);
+			box.setAttribute('role', 'tooltip');
+			document.body.append(box);
+			const r = anchor.getBoundingClientRect();
+			let top = r.bottom + 4;
+			if (top + box.offsetHeight > window.innerHeight - 8) top = Math.max(8, r.top - box.offsetHeight - 4);
+			box.style.left = Math.max(8, Math.min(r.left, window.innerWidth - box.offsetWidth - 8)) + 'px';
+			box.style.top = top + 'px';
+			pop = { el: box, anchor };
+		}
+
+		async function decorate(link) {
+			const m = LIKES_RE.exec(link.getAttribute('href') || '');
+			if (!m) return;
+			const id = m[1];
+			const count = link.textContent.trim();
+			if (link.dataset.bbLikers === count) return;
+			link.dataset.bbLikers = count;
+
+			let entry = cache.get(id);
+			if (!entry || entry.count !== count) {
+				entry = { count, users: fetchLikes(link.getAttribute('href')) };
+				cache.set(id, entry);
+			}
+			const users = await entry.users;
+			if (!users || !users.length || !link.isConnected) return;
+
+			let strip = link.nextElementSibling;
+			if (!strip || !strip.classList.contains('bb-likers')) {
+				strip = el('span', 'bb-likers');
+				link.after(strip);
+			}
+			strip.replaceChildren(...users.slice(0, MAX_AVATARS).map(avatar));
+			if (users.length > MAX_AVATARS) strip.append(el('span', 'bb-likers-more', '+' + (users.length - MAX_AVATARS)));
+
+			if (!link.dataset.bbHover) {
+				link.dataset.bbHover = '1';
+				let timer = 0;
+				const enter = async () => {
+					clearTimeout(timer);
+					const e = cache.get(id);
+					const list = e && await e.users;
+					if (list && list.length && link.isConnected) showPop(link, list);
+				};
+				const leave = () => { timer = setTimeout(() => { if (pop && pop.anchor === link) hidePop(); }, 120); };
+				for (const t of [link, strip]) {
+					t.addEventListener('mouseenter', enter);
+					t.addEventListener('mouseleave', leave);
+				}
+			}
+		}
+
+		function scan() {
+			chat.querySelectorAll('a.siropuChatMessageLikes').forEach((link) => { decorate(link); });
+			// Avatars left behind when a message lost all its likes.
+			chat.querySelectorAll('.bb-likers').forEach((s) => {
+				const prev = s.previousElementSibling;
+				if (!prev || !prev.classList.contains('siropuChatMessageLikes')) s.remove();
+			});
+			if (pop && !pop.anchor.isConnected) hidePop();
+		}
+
+		const style = document.createElement('style');
+		style.textContent = `
+			.bb-likers { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; vertical-align: middle; }
+			.bb-liker { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex: none; }
+			.bb-liker-letter { display: inline-grid; place-items: center; font-size: 10px; font-weight: 700; background: #888; color: #fff; }
+			.bb-likers-more { font-size: 11px; opacity: .8; margin-left: 2px; }
+			.menu.bb-likers-pop { position: fixed; display: block; margin: 0; z-index: 1000; min-width: 140px; max-width: 260px; pointer-events: none; }
+			.bb-likers-pop .menu-header { padding: 6px 10px; font-size: 12px; }
+			.bb-likers-list { list-style: none; margin: 0; padding: 4px 10px 8px; max-height: 260px; overflow: hidden; font-size: 13px; }
+			.bb-likers-list li { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+		`;
+		document.head.append(style);
+
+		scan();
+		let queued = false;
+		new MutationObserver(() => {
+			if (queued) return;
+			queued = true;
+			setTimeout(() => { queued = false; scan(); }, 200);
+		}).observe(chat, { childList: true, subtree: true, characterData: true });
+	}
+
 	function boot() {
 		const XF = window.XF;
 		if (!XF || !XF.Element || !XF.ajax) return false;
@@ -996,6 +1177,7 @@
 		installEditFix(XF, chat);
 		installLoadMoreFix(chat);
 		installEmojiMenu(XF, chat, EMOJI_SOURCE);
+		installLikers(XF, chat);
 		console.info(TAG, 'active');
 		return true;
 	}

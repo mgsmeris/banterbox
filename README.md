@@ -28,10 +28,11 @@ The emoji menu takes on the look of whatever forum style you've picked.
 
 ### Chrome, Edge, Brave
 
-1. Download the `chrome.zip` file from the [Releases page](../../releases/latest)
-   and unzip it.
-2. Go to `chrome://extensions` and turn on **Developer mode** (top right).
-3. Click **Load unpacked** and pick the unzipped folder.
+Get it from the [Chrome Web Store](https://chromewebstore.google.com/detail/banterbox/oekfncdjkojljcbheogkepfehpndpmim)
+and click **Add to Chrome**. It updates by itself.
+
+Had the `.zip` version from the Releases page? Remove it in `chrome://extensions`
+first, otherwise that copy never updates.
 
 ### Firefox
 

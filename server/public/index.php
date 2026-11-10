@@ -15,15 +15,16 @@ if (!in_array(Http::method(), ['GET', 'HEAD'], true)) {
 }
 
 $emojis = Emojis::all();
-// Manual beta downloads: always the newest GitHub Release (fixed file names).
+// Chrome: the Web Store. Firefox: always the newest signed file on GitHub (fixed name).
 const RELEASES = 'https://github.com/mgsmeris/banterbox/releases';
-$chrome = RELEASES . '/latest/download/banterbox-chrome.zip';
+$chrome = 'https://chromewebstore.google.com/detail/banterbox/oekfncdjkojljcbheogkepfehpndpmim';
 $firefox = RELEASES . '/latest/download/banterbox-firefox-signed.xpi';
 
 // Screenshots are shown only once their files are in public/assets/.
 $shots = array_filter([
 	['screen-menu.png', "The emoji menu in the shoutbox, in the forum's own style"],
 	['screen-popup.png', 'Settings in the extension: the emoji list switch and your own emojis'],
+	['screen-likes.png', 'Avatars next to the likes, and who liked it when you hover'],
 ], static fn (array $s): bool => is_file(App::publicDir() . '/assets/' . $s[0]));
 
 Http::pageHeaders(false);
@@ -100,11 +101,10 @@ View::head('BanterBox: a better Perpheads shoutbox');
 			<article class="card browser">
 				<h3>Chrome, Edge, Brave</h3>
 				<a class="btn btn-primary btn-add" href="<?= View::e($chrome) ?>" rel="noopener">Add to Chrome</a>
-				<p class="signed muted">Chrome Web Store version in review. Until then you install it by hand:</p>
+				<p class="signed"><span class="check" aria-hidden="true">✓</span> On the Chrome Web Store · updates itself</p>
 				<ol>
-					<li>Unzip the downloaded file.</li>
-					<li>Open <code>chrome://extensions</code> and turn on <em>Developer mode</em>.</li>
-					<li>Click <em>Load unpacked</em> and pick the unzipped folder.</li>
+					<li>Click <em>Add to Chrome</em> on the store page.</li>
+					<li>Installed the .zip version before? Remove that one in <code>chrome://extensions</code> first, so you get the store's updates.</li>
 				</ol>
 			</article>
 		</div>
